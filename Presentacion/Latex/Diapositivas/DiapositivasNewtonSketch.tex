@@ -1,0 +1,449 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{tikz}
+
+\definecolor{main}{RGB}{20,60,110}
+
+\setbeamercolor{frametitle}{fg=white,bg=main}
+\setbeamercolor{structure}{fg=main}
+\setbeamercolor{block title}{bg=main,fg=white}
+\setbeamercolor{block body}{bg=main!8}
+\setbeamercolor{block title alerted}{bg=red!70!black,fg=white}
+\setbeamercolor{block body alerted}{bg=red!8}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}{\hfill\scriptsize Newton Sketch \quad \insertframenumber/\inserttotalframenumber\hspace{1em}\vspace{0.5em}}
+
+% \eqrow{Título}{ecuación}{explicación}
+\newcommand{\eqrow}[3]{%
+  \textcolor{main}{\textbf{#1}}\par\vspace{2pt}
+  \begin{columns}[c]
+    \begin{column}{0.55\textwidth}
+      \centering $\displaystyle #2$
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      #3
+    \end{column}
+  \end{columns}
+  \vspace{4pt}
+}
+
+% Espacio reservado para una imagen: \imgspace{alto}{descripción}
+\newcommand{\imgspace}[2]{%
+  \fbox{\parbox[c][#1][c]{0.9\linewidth}{\centering\small #2}}}
+
+% Notación
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\norm}[1]{\lVert #1\rVert}
+\newcommand{\nablaf}{\nabla f}
+\newcommand{\Hess}{\nabla^2 f}
+\DeclareMathOperator{\nnz}{nnz}
+\DeclareMathOperator{\diag}{diag}
+
+\title{Newton Sketch}
+\subtitle{Optimización de segundo orden con proyecciones aleatorias}
+\author{Diego Arévalo y Yeferson Getial}
+\institute{Optimización Numérica y Álgebra Lineal Numérica}
+\date{}
+
+\begin{document}
+
+% ------------------------------------------------------------
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% ============================================================
+% 1. INTRODUCCIÓN Y MOTIVACIÓN
+% ============================================================
+\begin{frame}{Introducción}
+  Queremos resolver un problema convexo, con $n \gg d$,
+  \[
+    \min_{x\in\R^d} f(x), \qquad f(x)=\sum_{i=1}^{n}\phi_i(a_i^\top x),
+    \qquad A=\begin{bmatrix}a_1^\top\\ \vdots\\ a_n^\top\end{bmatrix}\in\R^{n\times d}.
+  \]
+  \vspace{-4pt}
+  \begin{itemize}
+    \item Regresión logística, mínimos cuadrados, programación con barreras.
+    \pause
+    \item[] \begin{alertblock}{Restricción de memoria}
+      La matriz $A$, muy alta ($n\gg d$), puede no caber en memoria.
+    \end{alertblock}
+    \pause
+    \item Nos gustaría un método con \alert{pocas iteraciones}, \alert{iteraciones baratas} y que \alert{use poca memoria}.
+    \item Lo más importante: \alert{garantizar convergencia}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Motivación: ¿por qué Newton y por qué es caro?}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \textcolor{main}{\textbf{Primer orden (gradiente)}}
+      \begin{itemize}
+        \item Costo por iteración: $O(nd)$.
+        \item Muchas iteraciones; sensible al condicionamiento.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \textcolor{main}{\textbf{Segundo orden (Newton)}}
+      \begin{itemize}
+        \item Pocas iteraciones, \alert{invariante afín}.
+        \item Costo por iteración: $O(nd^2 + d^3)$.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+  \vspace{8pt}
+  \pause
+  \begin{block}{Pregunta}
+    ¿Podemos conservar el comportamiento de Newton reduciendo la dimensión $n$ con aleatoriedad?
+  \end{block}
+\end{frame}
+
+\begin{frame}{Índice}
+  \begin{enumerate}
+    \item \textbf{Motivación}
+    \item \textbf{Funciones autoconcordantes}
+    \item \textbf{Matrices de sketch} y \textbf{subspace embeddings}
+    \item \textbf{Newton Sketch}
+    \item \textbf{Experimentos, resultados y conclusiones}
+  \end{enumerate}
+\end{frame}
+
+% ============================================================
+% 2. FUNCIONES AUTOCONCORDANTES
+% ============================================================
+\begin{frame}{Funciones autoconcordantes}
+  \begin{columns}[T]
+    \begin{column}{0.58\textwidth}
+      \begin{block}{Definición (una variable)}
+        Una función convexa $f:I\subset\R\to\R$ de clase $C^3$ es \emph{autoconcordante} si, para todo $x\in I$,
+        \[
+          |f'''(x)|\;\le\;2\,f''(x)^{3/2}.
+        \]
+      \end{block}
+      \pause
+      \begin{itemize}
+        \item Equivale a $\bigl|\tfrac{d}{dx}\,f''(x)^{-1/2}\bigr|\le 1$: la curvatura no cambia bruscamente respecto a sí misma.
+        \item Ejemplo: $f(x)=-\log x$ ($f''=x^{-2}$, $|f'''|=2x^{-3}$, se cumple con igualdad).
+        \item Más ejemplos: funciones lineales y cuadráticas.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.38\textwidth}
+      \centering
+      % \includegraphics[width=\linewidth]{fig_autoconcordante_1d.pdf}
+      \imgspace{5.5cm}{Imagen: gráfica de $-\log x$ (y su curvatura $f''$)}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Intuición: norma local y elipsoide de Dikin}
+  \begin{columns}[T]
+    \begin{column}{0.58\textwidth}
+      \textbf{En varias variables:} $f$ es autoconcordante si $\varphi(t)=f(x+th)$ lo es para todo $x$ y $h$. Equivalentemente,
+      \[
+        \bigl|D^3 f(x)[h,h,h]\bigr| \le 2\,\bigl(h^\top \Hess(x)\,h\bigr)^{3/2}.
+      \]
+      \pause
+      \begin{itemize}
+        \item \textbf{Norma local:} $\norm{h}_x=\sqrt{h^\top\Hess(x)h}$.
+        \item \textbf{Elipsoide de Dikin:} $\mathcal E_x=\{y:\norm{y-x}_x\le 1\}$ está contenido en el dominio de $f$.
+        \item Dentro de $\mathcal E_x$ la Hessiana casi no cambia $\Rightarrow$ el modelo cuadrático de Newton es confiable.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.38\textwidth}
+      \centering
+      % \includegraphics[width=\linewidth]{fig_dikin.pdf}
+      \imgspace{3.2cm}{Imagen: elipsoides de Dikin en distintos puntos}
+      \vspace{6pt}
+
+      \begin{alertblock}{Dos fases}
+        \small
+        \textbf{Amortiguada:} $\lambda$ grande, paso $\mu<1$, descenso fijo.\\
+        \textbf{Cuadrática:} $\lambda$ pequeño, el paso completo queda dentro de $\mathcal E_x$.
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+
+\begin{frame}{Newton en funciones autoconcordantes}
+ 
+\end{frame}
+
+% ============================================================
+% 3. MATRICES DE SKETCH Y SUBSPACE EMBEDDING
+% ============================================================
+\begin{frame}{Matrices de sketch}
+  \begin{columns}[c]
+    \begin{column}{0.55\textwidth}
+      Una matriz de \emph{sketch} $S\in\R^{m\times n}$, con $m\ll n$, es una proyección aleatoria que comprime filas:
+      \[
+        A\in\R^{n\times d}\ \longmapsto\ SA\in\R^{m\times d}.
+      \]
+      
+    \end{column}
+    \begin{column}{0.4\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.8]
+        \draw[fill=main!15] (0,0) rectangle (1,3);
+        \node at (0.5,1.5) {$A$};
+        \node at (-0.4,1.5) {$n$};
+        \node at (0.5,3.3) {$d$};
+        \draw[fill=main!35] (-3,1.0) rectangle (-1.2,1.0+0.9);
+        \node at (-2.1,1.45) {$S$};
+        \node at (-2.1,2.2) {$m\times n$};
+        \node at (0,-0.5) {$\xrightarrow{\ \ SA\ \ }$};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+
+  \pause
+  \begin{itemize}
+        \item Se construye \alert{sin mirar los datos} (\emph{oblivious}) o adaptada a ellos.
+        \item Debe preservar la información relevante de $A$.
+        \item Se evalúa por costo de aplicar $SA$ y por tamaño $m$.
+      \end{itemize}
+\end{frame}
+
+\begin{frame}{Subspace embedding}
+  \begin{definition}
+    $S\in\R^{m\times n}$ es un \emph{$\varepsilon$-subspace embedding} de $\operatorname{col}(A)$ si, para todo $y\in\R^d$,
+    \[
+      (1-\varepsilon)\norm{Ay}_2^2 \;\le\; \norm{SAy}_2^2 \;\le\; (1+\varepsilon)\norm{Ay}_2^2 .
+    \]
+  \end{definition}
+
+  \pause
+  
+  \begin{itemize}
+    \item Equivalente: $\norm{A^\top S^\top S A - A^\top A}_2\le\varepsilon\norm{A}_2^2$ (tras ortonormalizar).
+    \item Consecuencia clave: $(SA)^\top(SA)\approx A^\top A$, es decir, una \alert{Hessiana aproximada} con relación espectral $1\pm\varepsilon$.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Ejemplo 1: sketch Gaussiano}
+  \eqrow{Definición}
+    {S_{ij}\sim\mathcal{N}\!\left(0,\tfrac{1}{m}\right)\ \text{i.i.d.}}
+    {Matriz densa $m\times n$.}
+  \eqrow{Tamaño}
+    {m=O\!\left(\dfrac{d+\log(1/\delta)}{\varepsilon^2}\right)}
+    {Mínimo número de filas; garantía óptima.}
+  
+
+\end{frame}
+
+\begin{frame}{Ejemplo 2: CountSketch}
+  \begin{columns}[c]
+    \begin{column}{0.5\textwidth}
+      Cada columna de $S$ tiene \alert{un solo} elemento no nulo:
+      \[
+        S_{h(j),\,j}=\sigma_j,\quad h(j)\in[m],\ \sigma_j\in\{\pm1\}.
+      \]
+      \begin{itemize}
+        \item $SA$: cada fila de $A$ se suma con signo en un \emph{bucket}.
+        \item Costo: $O(\nnz(A))$.
+        \item Requiere $m=O(d^2/(\varepsilon^2\delta))$.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.45\textwidth}
+      \centering
+      \[
+        S=\begin{bmatrix}
+          0 & \!-1 & 0 & 1 & 0\\
+          1 & 0 & 0 & 0 & -1\\
+          0 & 0 & 1 & 0 & 0
+        \end{bmatrix}
+      \]
+      \footnotesize Ejemplo con $m=3$, $n=5$.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+\begin{frame}{Comparación de sketches}
+  \centering
+  \begin{tabular}{lccc}
+    \toprule
+    & \textbf{Gaussiana} & \textbf{CountSketch} & \textbf{SRHT} \\
+    \midrule
+    Filas $m$ & $O(d/\varepsilon^2)$ & $O(d^2/\varepsilon^2)$ & $\tilde O(d/\varepsilon^2)$ \\
+    Costo de $SA$ & $O(mnd)$ & $O(\nnz(A))$ & $O(nd\log m)$ \\
+    Estructura & densa & dispersa & rápida (FWHT) \\
+    \bottomrule
+  \end{tabular}
+  \vspace{10pt}
+
+  \begin{block}{Compromiso}
+    Menos filas $\Leftrightarrow$ aplicar $S$ más caro. Newton Sketch debe elegir según $n$, $d$ y $\nnz(A)$.
+  \end{block}
+\end{frame}
+
+% ============================================================
+% 4. NEWTON SKETCH
+% ============================================================
+\begin{frame}{Estructura de la Hessiana}
+  Para $f(x)=\sum_i\phi_i(a_i^\top x)$:
+  \\
+  \eqrow{Gradiente}
+    {\nablaf(x)=A^\top v(x),\quad v_i=\phi_i'(a_i^\top x)}
+    {Costo $O(nd)$.}
+    \pause
+  \eqrow{Hessiana}
+    {\Hess(x)=A^\top D(x)\,A,\quad D=\diag\bigl(\phi_i''(a_i^\top x)\bigr)}
+    {$D\succeq 0$ diagonal.}
+    \pause
+  \eqrow{Raíz cuadrada}
+    {\Hess(x)=\bigl(D^{1/2}A\bigr)^{\!\top}\bigl(D^{1/2}A\bigr)}
+    {La raíz $D^{1/2}A$ se obtiene \alert{gratis} escalando filas.}
+\end{frame}
+
+\begin{frame}{Newton Sketch: el algoritmo}
+  \textbf{Idea:} sustituir la raíz exacta por una versión comprimida.
+  \vspace{4pt}
+  \begin{alertblock}{Newton Sketch}
+    \[
+      \widehat H_t=\bigl(S_t D_t^{1/2}A\bigr)^{\!\top}\bigl(S_t D_t^{1/2}A\bigr),
+      \qquad
+      x_{t+1}=x_t-\mu_t\,\widehat H_t^{-1}\nablaf(x_t).
+    \]
+  \end{alertblock}
+  \pause
+  \begin{enumerate}
+    \item Calcular $\nablaf(x_t)$ y $D_t^{1/2}A$.
+    \item Generar $S_t\in\R^{m\times n}$ \alert{independiente} en cada iteración.
+    \item Formar $S_tD_t^{1/2}A$ y resolver el sistema $\widehat H_t\,\Delta=-\nablaf(x_t)$.
+    \item Búsqueda lineal sobre $f$ y actualizar $x_{t+1}=x_t+\mu_t\Delta$.
+  \end{enumerate}
+  \textbf{Costo:} $O(\text{costo}(SD^{1/2}A)+md^2+d^3)$ en lugar de $O(nd^2+d^3)$.
+\end{frame}
+
+\begin{frame}{El problema: la diagonal y la estructura}
+  \begin{itemize}
+    \item $D_t$ cambia en cada iteración $\Rightarrow$ hay que recalcular $D_t^{1/2}A$ y \alert{re-sketchear}.
+    \item Escalar filas cuesta $O(\nnz(A))$ y se hace ``gratis'', pero \dots
+    \item Con $S$ Gaussiana densa el producto domina: $O(mnd)$.
+    \item Con CountSketch se conserva $O(\nnz(A))$, pero $m=O(d^2)$ crece.
+    \item Si $D$ es casi singular (muchos $\phi_i''\approx 0$), el sketch pierde rango efectivo.
+  \end{itemize}
+  \begin{block}{Idea}
+    Elegir $S$ según la estructura: Gaussiana/SRHT cuando $m$ pequeño importa; CountSketch cuando $A$ es dispersa.
+  \end{block}
+  % TODO: ajustar esta diapositiva a la interpretación exacta de "diagonal" que usen en su trabajo.
+\end{frame}
+
+% ============================================================
+% 5. EJEMPLO PUNTUAL
+% ============================================================
+\begin{frame}{Ejemplo puntual: una iteración}
+  \textbf{Regresión logística} con $n=6$, $d=2$ (reemplazar con sus datos reales).
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \begin{enumerate}
+        \item $x_0=(0,0)^\top$, entonces $D_0=\tfrac14 I$.
+        \item $\nablaf(x_0)=A^\top v_0=\;?$
+        \item $D_0^{1/2}A$ y sketch $S\in\R^{3\times 6}$.
+        \item $\widehat H_0=\;?$ \quad vs.\quad $H_0=\;?$
+      \end{enumerate}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \centering
+      \begin{tabular}{lcc}
+        \toprule
+        & Newton & Newton Sketch \\
+        \midrule
+        $\Delta$ & $?$ & $?$ \\
+        $f(x_1)$ & $?$ & $?$ \\
+        $\lambda(x_1)$ & $?$ & $?$ \\
+        \bottomrule
+      \end{tabular}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ============================================================
+% 6. DEMOSTRACIÓN
+% ============================================================
+\begin{frame}{Resultado principal}
+  
+  \centering\small Convergencia \alert{lineal-cuadrática}: tasa lineal controlada por $\varepsilon$, no por el número de condición.
+\end{frame}
+
+\begin{frame}{Bosquejo de la demostración}
+  
+\end{frame}
+
+% ============================================================
+% 7. EXPERIMENTOS Y RESULTADOS
+% ============================================================
+\begin{frame}{Experimentos: configuración}
+  \begin{itemize}
+    \item \textbf{Problemas:} regresión logística, mínimos cuadrados, \dots
+    \item \textbf{Datos:} sintéticos ($n=10^5$--$10^6$, $d=100$--$500$) y reales (\texttt{nombre del dataset}).
+    \item \textbf{Métodos comparados:} Newton exacto, gradiente descendente, L-BFGS, Newton Sketch (Gaussiana / CountSketch / SRHT).
+    \item \textbf{Parámetros:} $m=c\,d$ con $c\in\{2,4,8\}$; criterio de parada $\lambda(x)^2/2\le 10^{-8}$.
+    \item \textbf{Métricas:} error $f(x_t)-f^\star$ vs.\ iteraciones y vs.\ tiempo.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Resultados}
+  \begin{columns}[c]
+    \begin{column}{0.52\textwidth}
+      \centering
+      % \includegraphics[width=\textwidth]{fig_convergencia.pdf}
+      \imgspace{4.2cm}{Figura: $f(x_t)-f^\star$ vs.\ iteraciones}
+    \end{column}
+    \begin{column}{0.44\textwidth}
+      \centering\small
+      \begin{tabular}{lcc}
+        \toprule
+        Método & Iter. & Tiempo (s) \\
+        \midrule
+        Newton & $?$ & $?$ \\
+        NS Gaussiana & $?$ & $?$ \\
+        NS CountSketch & $?$ & $?$ \\
+        \bottomrule
+      \end{tabular}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Resultados: efecto del tamaño del sketch}
+  \centering
+  % \includegraphics[width=0.7\textwidth]{fig_m.pdf}
+  \fbox{\parbox[c][5cm][c]{0.7\textwidth}{\centering Figura: tasa de convergencia en función de $m/d$}}
+  \vspace{6pt}
+
+  \small Verifica que la tasa lineal mejora al aumentar $m$, ya que $\varepsilon\sim\sqrt{d/m}$.
+\end{frame}
+
+% ============================================================
+% 8. CONCLUSIONES Y REFERENCIAS
+% ============================================================
+\begin{frame}{Conclusiones}
+  \begin{itemize}
+    \item \dots % completar
+    \item \dots % completar
+    \item \dots % completar
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[allowframebreaks]{Referencias}
+  \footnotesize
+  \begin{thebibliography}{9}
+    \bibitem{pw2017} M.~Pilanci and M.~J.~Wainwright, \emph{Newton Sketch: A Near Linear-Time Optimization Algorithm with Linear-Quadratic Convergence}, SIAM J. Optim., 27(1), 2017.
+    \bibitem{nn1994} Y.~Nesterov and A.~Nemirovskii, \emph{Interior-Point Polynomial Algorithms in Convex Programming}, SIAM, 1994.
+    \bibitem{bv2004} S.~Boyd and L.~Vandenberghe, \emph{Convex Optimization}, Cambridge University Press, 2004.
+    \bibitem{w2014} D.~P.~Woodruff, \emph{Sketching as a Tool for Numerical Linear Algebra}, Found.\ Trends Theor.\ Comput.\ Sci., 10(1--2), 2014.
+    \bibitem{cw2013} K.~L.~Clarkson and D.~P.~Woodruff, \emph{Low Rank Approximation and Regression in Input Sparsity Time}, STOC, 2013.
+  \end{thebibliography}
+\end{frame}
+
+\end{document}
