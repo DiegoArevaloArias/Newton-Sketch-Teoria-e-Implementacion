@@ -1,0 +1,1877 @@
+% ============================================================================
+%  Newton Sketch adaptativo: apuntes de estudio
+%  Archivo unico y autocontenido. Compilar dos veces con pdflatex (o latexmk -pdf).
+%  Paquetes: babel (spanish), mathpazo, amsmath, tcolorbox, tikz, pgfplots, algorithm,
+%  algpseudocode, listings, booktabs, hyperref (todos en TeX Live / MiKTeX estandar).
+% ============================================================================
+\documentclass[11pt,a4paper,oneside]{book}
+
+% ---------- Codificación, idioma y tipografía ----------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\IfFileExists{spanish.ldf}{%
+  \usepackage[spanish,es-tabla,es-nodecimaldot,es-noshorthands,es-noindentfirst]{babel}%
+}{% Respaldo para instalaciones de TeX sin babel-spanish: usa los datos de idioma genéricos de babel
+  \usepackage{babel}\babelprovide[import,main]{spanish}%
+  \setlocalecaption{spanish}{table}{Tabla}\setlocalecaption{spanish}{listtable}{Índice de tablas}%
+  \setlocalecaption{spanish}{contents}{Índice}%
+}
+\usepackage[sc]{mathpazo}
+\linespread{1.05}
+\usepackage{microtype}
+\usepackage[a4paper,margin=2.5cm,headheight=14pt]{geometry}
+
+% ---------- Matemáticas ----------
+\usepackage{amsmath,amssymb,amsthm,mathtools,bm}
+
+% ---------- Gráficos, tablas, algoritmos y código ----------
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{booktabs,array,multirow}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,shapes.geometric,fit,backgrounds}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.16}
+\usepgfplotslibrary{groupplots}
+\usepackage[most]{tcolorbox}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=green!40!black,urlcolor=blue!60!black]{hyperref}
+\hypersetup{pdftitle={Newton Sketch adaptativo: apuntes de estudio},pdfsubject={Sketching aleatorio, autoconcordancia y despacho economico estocastico}}
+
+% ---------- Colores ----------
+\definecolor{azul}{RGB}{28,69,135}
+\definecolor{verde}{RGB}{30,110,60}
+\definecolor{rojo}{RGB}{160,40,40}
+\definecolor{ocre}{RGB}{176,112,20}
+\definecolor{gris}{RGB}{90,90,90}
+
+% ---------- Entornos tipo teorema ----------
+\newtheorem{teorema}{Teorema}[chapter]
+\newtheorem{lema}[teorema]{Lema}
+\newtheorem{proposicion}[teorema]{Proposición}
+\newtheorem{corolario}[teorema]{Corolario}
+\theoremstyle{definition}
+\newtheorem{definicion}[teorema]{Definición}
+\newtheorem{ejemplo}[teorema]{Ejemplo}
+\newtheorem{ejercicio}{Ejercicio}[chapter]
+\theoremstyle{remark}
+\newtheorem{observacion}[teorema]{Observación}
+
+\tcolorboxenvironment{teorema}{enhanced,breakable,colback=azul!4,colframe=azul!70,boxrule=0.5pt,
+  left=6pt,right=6pt,top=4pt,bottom=4pt,before skip=10pt,after skip=10pt}
+\tcolorboxenvironment{lema}{enhanced,breakable,colback=azul!2,colframe=azul!45,boxrule=0.4pt,
+  left=6pt,right=6pt,top=4pt,bottom=4pt,before skip=10pt,after skip=10pt}
+\tcolorboxenvironment{proposicion}{enhanced,breakable,colback=azul!2,colframe=azul!45,boxrule=0.4pt,
+  left=6pt,right=6pt,top=4pt,bottom=4pt,before skip=10pt,after skip=10pt}
+\tcolorboxenvironment{corolario}{enhanced,breakable,colback=azul!2,colframe=azul!45,boxrule=0.4pt,
+  left=6pt,right=6pt,top=4pt,bottom=4pt,before skip=10pt,after skip=10pt}
+\tcolorboxenvironment{definicion}{enhanced,breakable,colback=verde!4,colframe=verde!60,boxrule=0.4pt,
+  left=6pt,right=6pt,top=4pt,bottom=4pt,before skip=10pt,after skip=10pt}
+
+% Cajas de apoyo al estudio
+\newtcolorbox{ideaclave}[1][Idea clave]{enhanced,breakable,colback=ocre!7,colframe=ocre!80,boxrule=0.5pt,
+  fonttitle=\bfseries\sffamily,title={#1},left=6pt,right=6pt,top=4pt,bottom=4pt,before skip=10pt,after skip=10pt}
+\newtcolorbox{resumen}[1][Resumen del capítulo]{enhanced,breakable,colback=gris!6,colframe=gris!70,boxrule=0.5pt,
+  fonttitle=\bfseries\sffamily,title={#1},left=6pt,right=6pt,top=4pt,bottom=4pt,before skip=12pt,after skip=10pt}
+\newtcolorbox{cuidado}[1][Cuidado]{enhanced,breakable,colback=rojo!5,colframe=rojo!70,boxrule=0.5pt,
+  fonttitle=\bfseries\sffamily,title={#1},left=6pt,right=6pt,top=4pt,bottom=4pt,before skip=10pt,after skip=10pt}
+
+% ---------- Algoritmos en español ----------
+\floatname{algorithm}{Algoritmo}
+\renewcommand{\listalgorithmname}{Lista de algoritmos}
+\algrenewcommand\algorithmicrequire{\textbf{Entrada:}}
+\algrenewcommand\algorithmicensure{\textbf{Salida:}}
+\algrenewcommand\algorithmicfor{\textbf{para}}
+\algrenewcommand\algorithmicdo{\textbf{hacer}}
+\algrenewcommand\algorithmicwhile{\textbf{mientras}}
+\algrenewcommand\algorithmicif{\textbf{si}}
+\algrenewcommand\algorithmicthen{\textbf{entonces}}
+\algrenewcommand\algorithmicelse{\textbf{si no}}
+\algrenewcommand\algorithmicend{\textbf{fin}}
+\algrenewcommand\algorithmicreturn{\textbf{devolver}}
+\algrenewcommand\algorithmicrepeat{\textbf{repetir}}
+\algrenewcommand\algorithmicuntil{\textbf{hasta que}}
+
+% ---------- Código ----------
+\lstset{language=Python,basicstyle=\ttfamily\footnotesize,keywordstyle=\color{azul}\bfseries,
+  commentstyle=\color{verde}\itshape,stringstyle=\color{rojo},showstringspaces=false,
+  frame=single,framerule=0.3pt,rulecolor=\color{gris!60},breaklines=true,columns=fullflexible,
+  keepspaces=true,xleftmargin=4pt,xrightmargin=4pt,aboveskip=8pt,belowskip=8pt,
+  literate={á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1 {ñ}{{\~n}}1}
+
+% ---------- Encabezados ----------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\nouppercase{\leftmark}}
+\fancyhead[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\small\thepage}\renewcommand{\headrulewidth}{0pt}}
+
+% ---------- Macros ----------
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\cO}{\mathcal{O}}
+\newcommand{\cE}{\mathcal{E}}
+\newcommand{\cK}{\mathcal{K}}
+\newcommand{\cC}{\mathcal{C}}
+\newcommand{\cN}{\mathcal{N}}
+\newcommand{\cW}{\mathcal{W}}
+\newcommand{\T}{^{\top}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+\newcommand{\nrm}[1]{\lVert #1\rVert}
+\newcommand{\abs}[1]{\left\lvert #1\right\rvert}
+\newcommand{\ip}[2]{\langle #1,\, #2\rangle}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\rank}{rango}
+\DeclareMathOperator{\nnz}{nnz}
+\DeclareMathOperator{\dom}{dom}
+\DeclareMathOperator{\col}{col}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\cvar}{CVaR}
+\newcommand{\lamf}{\lambda_f}
+\newcommand{\lamt}{\widetilde{\lambda}_f}
+\newcommand{\vne}{v_{\mathrm{ne}}}
+\newcommand{\vnsk}{v_{\mathrm{nsk}}}
+\newcommand{\xnsk}{x_{\mathrm{nsk}}}
+\newcommand{\dmu}{d_{\mu}}
+\newcommand{\dmub}{\overline{d}_{\mu}}
+\newcommand{\LH}{L_{H}}
+\newcommand{\PW}{\textsc{pw}}
+\newcommand{\LWP}{\textsc{lwp}}
+
+\setlength{\parskip}{3pt plus 1pt}
+\setlist{itemsep=2pt,topsep=4pt}
+\allowdisplaybreaks[2]
+\emergencystretch=1.5em
+\setlength{\belowcaptionskip}{6pt}
+\begin{document}
+\frontmatter
+\begin{titlepage}
+\centering
+\vspace*{2.2cm}
+{\sffamily\Large\color{gris} Documento proyecto\\[2pt] Álgebra lineal numérica y optimización numérica\par}
+\vspace{1.6cm}
+{\sffamily\bfseries\Huge\color{azul} Newton Sketch adaptativo\par}
+\vspace{0.6cm}
+{\sffamily\LARGE Matrices de \emph{sketch}, subespacios encajados,\\[4pt] y autoconcordancia\par}
+\vspace{1.6cm}
+\begin{tikzpicture}[>=Stealth,scale=0.95]
+  % A alta
+  \draw[fill=azul!18,draw=azul!80] (0,0) rectangle (1.3,4.2);
+  \node at (0.65,2.1) {$A$};
+  \node[below] at (0.65,0) {\footnotesize $n\times d$};
+  % S ancha
+  \draw[fill=ocre!25,draw=ocre!90] (-4.4,2.9) rectangle (-0.6,4.2);
+  \node at (-2.5,3.55) {$S$};
+  \node[below] at (-2.5,2.9) {\footnotesize $m\times n$};
+  \node at (-0.3,3.55) {$\cdot$};
+  \draw[->,thick] (1.7,2.1) -- (3.3,2.1);
+  % SA
+  \draw[fill=verde!20,draw=verde!80] (3.7,1.45) rectangle (5.0,2.75);
+  \node at (4.35,2.1) {$SA$};
+  \node[below] at (4.35,1.45) {\footnotesize $m\times d$};
+  \draw[->,thick] (5.4,2.1) -- (7.0,2.1);
+  \node[right,align=left] at (7.1,2.1) {$A\T S\T S A \;\approx\; A\T A$\\[4pt]\footnotesize con $m\ll n$};
+\end{tikzpicture}
+\vfill
+{\large Documento con teoría, demostraciones,\\ experimentos numéricos reproducibles \par}
+\vspace{1cm}
+{\large Autores: Diego Alejandro Arévalo Arias y Yeferson Arlei Getial Cuestas \par}
+{\large Noviembre de 2026\par}
+\end{titlepage}
+
+\tableofcontents
+\mainmatter
+\chapter{Introducción y mapa del documento}\label{cap:intro}
+
+\section{¿De qué trata este documento?}
+
+Muchos problemas de optimización a gran escala tienen la forma
+\begin{equation}\label{eq:problema-general}
+  \min_{x\in\R^d}\; f(x), \qquad\text{con}\qquad \nabla^2 f(x) \;=\; B(x)\T B(x),\quad B(x)\in\R^{n\times d},\quad n\gg d,
+\end{equation}
+es decir, el hessiano se escribe como el producto de una matriz \emph{alta} por su traspuesta.
+Así ocurre en mínimos cuadrados ($B=A$), en regresión logística y demás modelos lineales generalizados
+($B=D(x)^{1/2}A$), en programación lineal y cuadrática resueltas con barrera logarítmica
+($B=\diag(1/s_i)\,A$, con $s$ el vector de holguras) y, como veremos al final, en el despacho económico de
+sistemas eléctricos con muchos escenarios o muchas restricciones de red.
+
+El método de Newton resuelve estos problemas en muy pocas iteraciones, pero cada iteración cuesta
+$\cO(nd^2)$ operaciones solo para formar $B\T B$. El descenso de gradiente cuesta $\cO(nd)$ por iteración,
+pero su número de iteraciones crece con el número de condición $\kappa=L/\mu$. El \textbf{Newton Sketch}
+(Pilanci y Wainwright, 2017) busca lo mejor de ambos mundos: sustituye $B$ por una versión comprimida
+$SB\in\R^{m\times d}$, con $S$ una matriz aleatoria de $m\ll n$ filas, y da el paso de Newton con el hessiano
+aproximado $(SB)\T(SB)$. El \textbf{Newton Sketch adaptativo} (Lacotte, Wang y Pilanci, 2021) muestra que,
+cuando el objetivo tiene una parte fuertemente convexa, el tamaño $m$ puede bajar hasta la \emph{dimensión
+efectiva} del hessiano ---que puede ser muy inferior a $d$--- y que dicho tamaño se puede encontrar
+automáticamente, duplicándolo solo cuando el progreso observado es insuficiente.
+
+Para entender por qué esto funciona hacen falta tres bloques de teoría que provienen de dos materias distintas:
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{Álgebra lineal numérica aleatorizada}: qué matrices $S$ existen, cuánto cuesta aplicarlas y
+        por qué $A\T S\T S A\approx A\T A$ (teoría de \emph{subespacios encajados}, en inglés
+        \emph{subspace embeddings}).
+  \item \textbf{Optimización convexa}: funciones $\mu$-fuertemente convexas y $L$-suaves, método de Newton y,
+        sobre todo, \textbf{funciones autoconcordantes}, que permiten analizar Newton sin constantes
+        dependientes del problema.
+  \item \textbf{Modelado}: cómo aparecen estas estructuras en un problema real, aquí el \textbf{despacho
+        económico} (o reparto económico de carga) y sus versiones estocásticas con precios fluctuantes y con
+        aportes hídricos gobernados por el fenómeno de El Niño.
+\end{enumerate}
+
+\begin{ideaclave}[La idea en una línea]
+Un subespacio encajado garantiza $(1-\eps)\,B\T B \preceq B\T S\T S B \preceq (1+\eps)\,B\T B$.
+La autoconcordancia garantiza que Newton tolera ese error multiplicativo sin perder su convergencia rápida,
+con constantes universales. Juntas dan un método de segundo orden de coste casi lineal en el tamaño de los datos.
+\end{ideaclave}
+
+\section{Mapa de dependencias}
+
+\begin{center}
+\begin{tikzpicture}[>=Stealth,node distance=9mm and 12mm,
+  caja/.style={draw,rounded corners=2pt,align=center,font=\footnotesize,inner sep=4pt,minimum width=3.3cm},
+  opt/.style={caja,fill=azul!8,draw=azul!70},
+  aln/.style={caja,fill=verde!8,draw=verde!70},
+  ns/.style={caja,fill=ocre!12,draw=ocre!90},
+  ap/.style={caja,fill=rojo!6,draw=rojo!70}]
+  \node[opt] (c2) {Cap.~\ref{cap:opt}: $\mu$, $L$,\\ gradiente y Newton};
+  \node[opt,below=of c2] (c3) {Cap.~\ref{cap:sc}: funciones\\ autoconcordantes};
+  \node[aln,right=12mm of c2] (c4) {Cap.~\ref{cap:sketch}: matrices\\ de \emph{sketch}};
+  \node[aln,below=of c4] (c5) {Cap.~\ref{cap:embed}: subespacios\\ encajados};
+  \node[aln,right=7mm of c5] (c6) {Cap.~\ref{cap:ls}--\ref{cap:lin}: mínimos\\ cuadrados y\\ sistemas lineales};
+  \node[ns,below=12mm of $(c3)!0.5!(c5)$] (c8) {Cap.~\ref{cap:ns}: Newton Sketch};
+  \node[ns,below=of c8] (c9) {Cap.~\ref{cap:ans}: Experimentos};
+  \draw[->] (c2) -- (c3);
+  \draw[->] (c4) -- (c5);
+  \draw[->] (c5) -- (c6);
+  \draw[->] (c3) -- (c8);
+  \draw[->] (c5) -- (c8);
+  \draw[->] (c6.south) |- (c8.east);
+  \draw[->] (c8) -- (c9);
+
+\end{tikzpicture}
+\end{center}
+
+Los capítulos \ref{cap:opt}--\ref{cap:sc} (azul) son de optimización; los capítulos
+\ref{cap:sketch}--\ref{cap:lin} (verde) son de álgebra lineal numérica; ambos confluyen en los capítulos
+\ref{cap:ns}--\ref{cap:ans}. Los capítulos \ref{cap:de}--\ref{cap:nino} son la aplicación.
+
+
+
+\section{Notación}\label{sec:notacion}
+
+\begin{center}
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+Símbolo & Significado \\
+\midrule
+$A\in\R^{n\times d}$ & matriz de datos, alta: $n\gg d$; filas $a_i\T$ \\
+$S\in\R^{m\times n}$ & matriz de \emph{sketch}; $m$ es el tamaño del \emph{sketch} \\
+$U\in\R^{n\times d}$ & base ortonormal del espacio columna de $A$ \\
+$\ell_i$ & puntuación de palanca (\emph{leverage score}) de la fila $i$ \\
+$\eps$ & distorsión del encaje, $\eps\in(0,1)$ \\
+$p$ & probabilidad de fallo de un evento aleatorio \\
+$\delta$ & tolerancia de optimización: se busca $f(x)-f(x^\star)\le\delta$ \\
+$\mu,\;L,\;\kappa=L/\mu$ & constantes de convexidad fuerte y de suavidad; número de condición \\
+$\LH$ & constante de Lipschitz del hessiano \\
+$M$ & constante de autoconcordancia ($M=1$: forma estándar) \\
+$H(x)=\nabla^2 f(x)$, $H_S(x)$ & hessiano exacto y hessiano con \emph{sketch} \\
+$\nrm{h}_x=(h\T H(x)h)^{1/2}$ & norma local en $x$ \\
+$\lamf(x)$, $\lamt(x)$ & decremento de Newton exacto y aproximado \\
+$\vne$, $\vnsk$ & dirección de Newton exacta y con \emph{sketch} \\
+$\dmu(x)$, $\dmub$ & dimensión efectiva local y global \\
+$a,\,b$ & parámetros de la búsqueda lineal con retroceso \\
+$\theta$ & parámetro del método de barrera \\
+$\nnz(A)$ & número de entradas no nulas de $A$ \\
+$X\preceq Y$ & orden de Loewner: $Y-X$ es semidefinida positiva \\
+$a\lesssim b$, $a\asymp b$ & desigualdad e igualdad salvo constantes universales \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{cuidado}[Tres convenciones que difieren de parte de la bibliografía]
+\begin{itemize}
+  \item En la bibliografía de \emph{sketching} se suele llamar $\delta$ a la probabilidad de fallo. Aquí se
+        llama $p$, para reservar $\delta$ a la tolerancia de optimización, como hacen los artículos de Newton Sketch.
+\end{itemize}
+\end{cuidado}
+\part{Optimización: de las constantes del problema a las constantes universales}
+\chapter{Convexidad fuerte, suavidad y los métodos clásicos}\label{cap:opt}
+
+Este capítulo fija el lenguaje con el que se mide habitualmente la dificultad de un problema convexo: las
+constantes $\mu$ y $L$. Sirve de punto de comparación para todo lo demás: el análisis clásico de Newton
+depende de esas constantes; el análisis autoconcordante del capítulo~\ref{cap:sc} no.
+
+\section{Funciones \texorpdfstring{$\mu$}{mu}-fuertemente convexas y \texorpdfstring{$L$}{L}-suaves}
+
+\begin{definicion}[Convexidad fuerte y suavidad]\label{def:mu-L}
+Sea $f:\R^d\to\R$ diferenciable.
+\begin{enumerate}[label=(\alph*)]
+  \item $f$ es \textbf{$\mu$-fuertemente convexa} ($\mu>0$) si, para todo $x,y$,
+  \[ f(y)\;\ge\; f(x)+\ip{\nabla f(x)}{y-x}+\frac{\mu}{2}\nrm{y-x}_2^2 . \]
+  \item $f$ es \textbf{$L$-suave} si su gradiente es $L$-Lipschitz: $\nrm{\nabla f(x)-\nabla f(y)}_2\le L\nrm{x-y}_2$.
+        Si además es convexa, esto equivale a
+  \[ f(y)\;\le\; f(x)+\ip{\nabla f(x)}{y-x}+\frac{L}{2}\nrm{y-x}_2^2 . \]
+\end{enumerate}
+El cociente $\kappa=L/\mu\ge 1$ es el \textbf{número de condición} de $f$.
+\end{definicion}
+
+Geométricamente, $f$ queda atrapada entre dos paraboloides: uno de curvatura $\mu$ por debajo y otro de
+curvatura $L$ por encima. Para funciones dos veces diferenciables la definición equivale a una cota espectral
+uniforme del hessiano:
+\begin{equation}\label{eq:mu-L-hess}
+  \mu I \;\preceq\; \nabla^2 f(x)\;\preceq\; L I \qquad\text{para todo } x .
+\end{equation}
+
+\begin{proposicion}[Consecuencias básicas]\label{prop:mu-L-consec}
+Si $f$ es $\mu$-fuertemente convexa y $L$-suave, con minimizador $x^\star$ y valor óptimo $f^\star$, entonces para todo $x$:
+\begin{align}
+  \frac{\mu}{2}\nrm{x-x^\star}_2^2 \;&\le\; f(x)-f^\star \;\le\; \frac{L}{2}\nrm{x-x^\star}_2^2, \label{eq:cota-dist}\\
+  \frac{1}{2L}\nrm{\nabla f(x)}_2^2 \;&\le\; f(x)-f^\star \;\le\; \frac{1}{2\mu}\nrm{\nabla f(x)}_2^2. \label{eq:PL}
+\end{align}
+\end{proposicion}
+
+\begin{proof}
+\eqref{eq:cota-dist} es la definición con $x\leftarrow x^\star$ (donde $\nabla f(x^\star)=0$). Para la cota
+superior de \eqref{eq:PL} se minimiza en $y$ el lado derecho de la desigualdad de convexidad fuerte: el mínimo
+se alcanza en $y=x-\nabla f(x)/\mu$ y vale $f(x)-\nrm{\nabla f(x)}^2/(2\mu)$; como la desigualdad vale para todo $y$,
+en particular $f^\star\ge f(x)-\nrm{\nabla f(x)}^2/(2\mu)$. La cota inferior sale de la suavidad evaluada en
+$y=x-\nabla f(x)/L$: $f^\star\le f(y)\le f(x)-\nrm{\nabla f(x)}^2/(2L)$.
+\end{proof}
+
+La desigualdad derecha de \eqref{eq:PL} se conoce como condición de Polyak--Łojasiewicz y es lo único que se
+necesita para la convergencia lineal del descenso de gradiente.
+
+\begin{ejemplo}[Mínimos cuadrados]\label{ej:ls-mu-L}
+Para $f(x)=\tfrac12\nrm{Ax-b}_2^2$ se tiene $\nabla^2 f=A\T A$, de modo que $\mu=\sigma_{\min}(A)^2$,
+$L=\sigma_{\max}(A)^2$ y $\kappa(f)=\kappa(A)^2$. Una matriz con $\kappa(A)=10^3$, nada excepcional, da un
+problema con $\kappa=10^6$.
+\end{ejemplo}
+
+\begin{ejemplo}[Regresión logística regularizada]\label{ej:logistica-mu-L}
+Para $f(x)=\sum_{i=1}^n\log(1+e^{-y_i a_i\T x})+\tfrac{\mu}{2}\nrm{x}_2^2$ se tiene
+$\nabla^2 f(x)=A\T D(x)A+\mu I$, con $D(x)$ diagonal de entradas $\sigma_i(1-\sigma_i)\in(0,\tfrac14]$. Por tanto
+$f$ es $\mu$-fuertemente convexa y $L$-suave con $L=\tfrac14\sigma_{\max}(A)^2+\mu$. Con regularización débil,
+$\kappa$ es enorme: en el experimento del capítulo~\ref{cap:ans} vale $4\cdot 10^5$.
+\end{ejemplo}
+
+\section{Descenso de gradiente: la factura del número de condición}
+
+\begin{teorema}[Convergencia lineal del descenso de gradiente]\label{teo:gd}
+Sea $f$ $\mu$-fuertemente convexa y $L$-suave. La iteración $x_{t+1}=x_t-\tfrac1L\nabla f(x_t)$ satisface
+\[ f(x_t)-f^\star\;\le\;\Bigl(1-\frac{\mu}{L}\Bigr)^{t}\,\bigl(f(x_0)-f^\star\bigr). \]
+En consecuencia bastan $t\ge\kappa\log\bigl((f(x_0)-f^\star)/\delta\bigr)$ iteraciones para alcanzar precisión $\delta$.
+\end{teorema}
+
+\begin{proof}
+Por suavidad, $f(x_{t+1})\le f(x_t)-\tfrac{1}{2L}\nrm{\nabla f(x_t)}^2$. Por \eqref{eq:PL},
+$\nrm{\nabla f(x_t)}^2\ge 2\mu\,(f(x_t)-f^\star)$. Restando $f^\star$ queda
+$f(x_{t+1})-f^\star\le(1-\mu/L)(f(x_t)-f^\star)$.
+\end{proof}
+
+El método acelerado de Nesterov mejora la dependencia a $\sqrt{\kappa}\,\log(1/\delta)$ iteraciones, que es
+óptima para métodos de primer orden. En ambos casos el coste por iteración es el de un gradiente,
+$\cO(nd)$ en problemas del tipo~\eqref{eq:problema-general}, pero el número de iteraciones depende de $\kappa$.
+
+\section{El método de Newton}
+
+El paso de Newton minimiza el modelo cuadrático de $f$ en torno a $x$:
+\begin{equation}\label{eq:newton-modelo}
+  \vne\;=\;\argmin_{v}\Bigl\{\ip{\nabla f(x)}{v}+\tfrac12\, v\T\nabla^2 f(x)\,v\Bigr\}\;=\;-\nabla^2 f(x)^{-1}\nabla f(x),
+  \qquad x^{+}=x+s\,\vne ,
+\end{equation}
+con $s\in(0,1]$ elegido por \textbf{búsqueda lineal con retroceso} de parámetros $a\in(0,\tfrac12)$, $b\in(0,1)$:
+se parte de $s=1$ y se multiplica por $b$ hasta que $f(x+s\vne)\le f(x)+a\,s\,\ip{\nabla f(x)}{\vne}$ (condición de Armijo).
+
+\begin{proposicion}[Invariancia afín]\label{prop:afin}
+Sea $T$ invertible y $\tilde f(y)=f(Ty)$. Si $x_0=Ty_0$, las iteraciones de Newton (con la misma búsqueda lineal)
+aplicadas a $f$ y a $\tilde f$ satisfacen $x_t=Ty_t$ para todo $t$.
+\end{proposicion}
+
+\begin{proof}
+$\nabla\tilde f(y)=T\T\nabla f(Ty)$ y $\nabla^2\tilde f(y)=T\T\nabla^2 f(Ty)T$, luego el paso de Newton para
+$\tilde f$ es $-T^{-1}\nabla^2 f(Ty)^{-1}\nabla f(Ty)=T^{-1}\vne$. Además $\ip{\nabla \tilde f}{T^{-1}\vne}=\ip{\nabla f}{\vne}$
+y $\tilde f(y+sT^{-1}\vne)=f(x+s\vne)$, así que la búsqueda lineal acepta el mismo $s$.
+\end{proof}
+
+La invariancia afín es la razón profunda por la que Newton es insensible al mal condicionamiento: un cambio de
+variables lineal puede convertir $\kappa=10^6$ en $\kappa=1$ y el método produce exactamente los mismos
+iterados. El descenso de gradiente no tiene esta propiedad.
+
+\subsection{El análisis clásico y sus defectos}
+
+\begin{teorema}[Newton con retroceso; análisis clásico {\cite[§9.5.3]{BV}}]\label{teo:newton-clasico}
+Sea $f$ $\mu$-fuertemente convexa, $L$-suave y con hessiano $\LH$-Lipschitz:
+$\nrm{\nabla^2 f(x)-\nabla^2 f(y)}_2\le\LH\nrm{x-y}_2$. Existen
+\[ \eta=\min\{1,\,3(1-2a)\}\,\frac{\mu^2}{\LH}, \qquad \gamma=a\,b\,\eta^2\,\frac{\mu}{L^2}, \]
+tales que:
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{Fase amortiguada.} Si $\nrm{\nabla f(x_t)}_2\ge\eta$, entonces $f(x_{t+1})-f(x_t)\le-\gamma$.
+  \item \textbf{Fase cuadrática.} Si $\nrm{\nabla f(x_t)}_2<\eta$, la búsqueda lineal acepta $s=1$ y
+  \[ \frac{\LH}{2\mu^2}\nrm{\nabla f(x_{t+1})}_2\;\le\;\Bigl(\frac{\LH}{2\mu^2}\nrm{\nabla f(x_t)}_2\Bigr)^{2}. \]
+\end{enumerate}
+El número total de iteraciones para alcanzar $f(x)-f^\star\le\delta$ es a lo sumo
+\[ \frac{f(x_0)-f^\star}{\gamma}\;+\;\log_2\log_2\frac{\eps_0}{\delta},\qquad \eps_0=\frac{2\mu^3}{\LH^2}. \]
+\end{teorema}
+
+El término $\log_2\log_2(\eps_0/\delta)$ es, a efectos prácticos, una constante: vale $6$ para una precisión
+relativa de $10^{-19}$. Este es el sentido de \emph{convergencia cuadrática}: el número de cifras correctas se
+duplica en cada iteración.
+
+\begin{cuidado}[Lo que este teorema tiene de insatisfactorio]
+\begin{enumerate}
+  \item La cota depende de $\mu$, $L$ y $\LH$, que casi nunca se conocen, y a través de $\gamma\propto\mu^5/(L^2\LH^2)$
+        es pésima para problemas mal condicionados; en la práctica Newton se comporta muchísimo mejor.
+  \item La cota cambia si se hace un cambio de variables lineal, pero el algoritmo no (proposición~\ref{prop:afin}).
+        Un análisis en norma euclídea no puede capturar un método que es invariante afín.
+\end{enumerate}
+La teoría de funciones autoconcordantes (capítulo~\ref{cap:sc}) resuelve ambos problemas, y es la que usan
+los teoremas de Newton Sketch.
+\end{cuidado}
+
+\subsection{El coste de una iteración y la raíz cuadrada del hessiano}\label{sec:raiz-hess}
+
+En los problemas que nos interesan el hessiano tiene una \emph{raíz cuadrada} explícita:
+una matriz $B(x)\in\R^{n\times d}$ con $B(x)\T B(x)=\nabla^2 f(x)$. (No es la raíz simétrica $d\times d$: es
+rectangular y se obtiene gratis de la estructura del problema.)
+
+\begin{center}
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+Problema & $f(x)$ & $B(x)=\nabla^2 f(x)^{1/2}$ \\
+\midrule
+Mínimos cuadrados & $\tfrac12\nrm{Ax-b}_2^2$ & $A$ \\
+Modelo lineal generalizado & $\sum_i\varphi_i(a_i\T x)$ & $\diag\bigl(\varphi_i''(a_i\T x)^{1/2}\bigr)A$ \\
+Regresión logística & $\sum_i\log(1+e^{-y_ia_i\T x})$ & $\diag\bigl((\sigma_i(1-\sigma_i))^{1/2}\bigr)A$ \\
+Barrera logarítmica & $-\sum_i\log(b_i-a_i\T x)$ & $\diag\bigl(1/(b_i-a_i\T x)\bigr)A$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Con esta estructura, una iteración de Newton cuesta $\cO(nd)$ para formar $B$ y el gradiente,
+$\cO(nd^2)$ para formar $B\T B$ y $\cO(d^3)$ para resolver el sistema. Cuando $n\gg d$, \textbf{el cuello de
+botella es el producto $B\T B$}. Ahí es exactamente donde actúa el \emph{sketching}.
+
+\begin{resumen}
+\begin{itemize}
+  \item $\mu$ y $L$ acotan la curvatura por abajo y por arriba; $\kappa=L/\mu$ mide la dificultad para los métodos de primer orden.
+  \item Descenso de gradiente: $\cO(nd)$ por iteración, $\kappa\log(1/\delta)$ iteraciones.
+  \item Newton: $\cO(nd^2)$ por iteración, número de iteraciones prácticamente independiente de $\kappa$; es invariante afín.
+  \item El análisis clásico de Newton depende de $\mu$, $L$, $\LH$ y no refleja su comportamiento real.
+  \item El hessiano de los problemas de interés es $B\T B$ con $B$ alta: formar ese producto es lo caro.
+\end{itemize}
+\end{resumen}
+
+
+\chapter{Funciones autoconcordantes}\label{cap:sc}
+
+La autoconcordancia, introducida por Nesterov y Nemirovski, es la condición de regularidad \emph{adaptada al
+método de Newton}. En lugar de acotar el hessiano por constantes fijas ($\mu$ y $L$), acota \emph{cuánto
+puede cambiar el hessiano} medido en la métrica que el propio hessiano define. Es la hipótesis central de
+los teoremas de Newton Sketch.
+
+\section{Definición y primeros ejemplos}
+
+\begin{definicion}[Autoconcordancia]\label{def:sc}
+Una función convexa $\varphi:\R\to\R\cup\{+\infty\}$, tres veces derivable en su dominio abierto, es
+\textbf{autoconcordante con constante $M\ge0$} si
+\begin{equation}\label{eq:sc-1d}
+  \abs{\varphi'''(t)}\;\le\;2M\,\varphi''(t)^{3/2}\qquad\text{para todo } t\in\dom\varphi .
+\end{equation}
+Una función convexa $f:\R^d\to\R\cup\{+\infty\}$ es autoconcordante con constante $M$ si lo es su restricción
+a cada recta, $t\mapsto f(x+th)$. Equivalentemente,
+\begin{equation}\label{eq:sc-nd}
+  \abs{D^3f(x)[h,h,h]}\;\le\;2M\,\bigl(h\T\nabla^2 f(x)\,h\bigr)^{3/2}\qquad\text{para todo } x\in\dom f,\ h\in\R^d .
+\end{equation}
+Si $M=1$ se dice \textbf{autoconcordante estándar}, o simplemente autoconcordante.
+\end{definicion}
+
+El exponente $3/2$ no es arbitrario: es el único que hace la condición invariante bajo cambios de variable
+afines $x\mapsto Tx+c$ (ambos lados de \eqref{eq:sc-nd} se transforman igual). El factor $2$ es una
+normalización que hace que $-\log t$ tenga constante exactamente $1$.
+
+\begin{ejemplo}[Funciones autoconcordantes]\label{ej:sc}
+\begin{enumerate}[label=(\alph*)]
+  \item \textbf{Lineales y cuadráticas convexas}: $\varphi'''=0$; son autoconcordantes con $M=0$.
+  \item \textbf{Logaritmo negativo}: $\varphi(t)=-\log t$ en $t>0$. $\varphi''=1/t^2$, $\varphi'''=-2/t^3$, de modo
+        que $\abs{\varphi'''}=2(\varphi'')^{3/2}$: se cumple \eqref{eq:sc-1d} con igualdad y $M=1$.
+  \item \textbf{Barrera logarítmica de un poliedro}: $f(x)=-\sum_{i=1}^n\log(b_i-a_i\T x)$; es suma de
+        composiciones afines de (b), luego autoconcordante estándar (proposición~\ref{prop:sc-calculo}).
+  \item \textbf{Entropía más barrera}: $\varphi(t)=t\log t-\log t$ en $t>0$.
+  \item \textbf{Barrera del cono semidefinido}: $f(X)=-\log\det X$ sobre $X\succ0$.
+\end{enumerate}
+\end{ejemplo}
+
+\begin{ejemplo}[Funciones que \emph{no} lo son]\label{ej:no-sc}
+\begin{enumerate}[label=(\alph*)]
+  \item $\varphi(t)=e^{t}$: $\varphi'''/(\varphi'')^{3/2}=e^{-t/2}\to\infty$ cuando $t\to-\infty$.
+  \item La pérdida logística $\varphi(t)=\log(1+e^{-t})$: con $\sigma=1/(1+e^{t})$ se tiene
+        $\varphi''=\sigma(1-\sigma)$ y $\abs{\varphi'''}=\sigma(1-\sigma)\abs{1-2\sigma}$, de modo que
+        $\abs{\varphi'''}/(\varphi'')^{3/2}=\abs{1-2\sigma}/\sqrt{\sigma(1-\sigma)}\to\infty$ cuando $\abs{t}\to\infty$.
+        Cumple, en cambio, $\abs{\varphi'''}\le\varphi''$ (autoconcordancia \emph{generalizada}), y esto basta
+        para recuperar la autoconcordancia al añadir una regularización (proposición~\ref{prop:logistica-sc}).
+\end{enumerate}
+\end{ejemplo}
+
+\begin{proposicion}[Cálculo de funciones autoconcordantes]\label{prop:sc-calculo}
+\begin{enumerate}[label=(\alph*)]
+  \item \textbf{Composición afín}: si $f$ es autoconcordante con constante $M$, también lo es $x\mapsto f(Tx+c)$.
+  \item \textbf{Suma}: si $f_1$ y $f_2$ lo son con constantes $M_1$, $M_2$, entonces $f_1+f_2$ lo es con constante $\max\{M_1,M_2\}$.
+  \item \textbf{Escalado}: si $f$ lo es con constante $M$ y $c>0$, entonces $cf$ lo es con constante $M/\sqrt{c}$.
+        En particular, $M^2 f$ es autoconcordante estándar.
+\end{enumerate}
+\end{proposicion}
+
+\begin{proof}
+(a) Basta restringir a rectas. (b) En una recta, con $M=\max\{M_1,M_2\}$,
+$\abs{\varphi_1'''+\varphi_2'''}\le 2M\bigl((\varphi_1'')^{3/2}+(\varphi_2'')^{3/2}\bigr)\le 2M(\varphi_1''+\varphi_2'')^{3/2}$,
+porque $u^{3/2}+w^{3/2}\le(u+w)^{3/2}$ para $u,w\ge0$. (c) $\abs{c\varphi'''}\le 2Mc(\varphi'')^{3/2}=2Mc^{-1/2}(c\varphi'')^{3/2}$.
+\end{proof}
+
+\begin{cuidado}[El escalado importa]
+El apartado (c) dice que multiplicar por una constante \emph{pequeña} empeora la constante de
+autoconcordancia. El paso de Newton no cambia al escalar $f$, pero los umbrales de los teoremas (enunciados
+para $M=1$) sí se refieren a la escala estándar: el decremento de Newton de $M^2f$ es $M$ veces el de $f$.
+\end{cuidado}
+
+\section{La geometría local: norma local y elipsoide de Dikin}
+
+Sea $f$ autoconcordante estándar con $\nabla^2 f(x)\succ0$. El hessiano define en cada punto una norma y su dual:
+\[ \nrm{h}_x=\bigl(h\T\nabla^2 f(x)\,h\bigr)^{1/2},\qquad \nrm{g}_x^{*}=\bigl(g\T\nabla^2 f(x)^{-1}g\bigr)^{1/2}. \]
+El \textbf{elipsoide de Dikin} de radio $r$ es $W(x,r)=\{y:\nrm{y-x}_x<r\}$.
+
+El hecho básico del que se deduce todo lo demás es un cálculo de una línea. Si $\varphi$ es autoconcordante
+estándar en una variable y $\varphi''>0$,
+\begin{equation}\label{eq:sc-clave}
+  \abs{\frac{d}{dt}\Bigl(\varphi''(t)^{-1/2}\Bigr)}\;=\;\abs{\frac{\varphi'''(t)}{2\,\varphi''(t)^{3/2}}}\;\le\;1 .
+\end{equation}
+Es decir: \emph{la función $\varphi''^{-1/2}$ es $1$-Lipschitz}. Integrando entre $0$ y $t$ se obtiene
+$\varphi''(0)^{-1/2}-t\le\varphi''(t)^{-1/2}\le\varphi''(0)^{-1/2}+t$, o sea, con $c_0=\varphi''(0)^{1/2}$,
+\begin{equation}\label{eq:sc-hess-1d}
+  \frac{\varphi''(0)}{(1+c_0t)^2}\;\le\;\varphi''(t)\;\le\;\frac{\varphi''(0)}{(1-c_0t)^2},
+  \qquad 0\le t<1/c_0 .
+\end{equation}
+Aplicando esto a $\varphi(t)=f(x+th)$ e integrando una y dos veces se obtienen las cotas siguientes.
+
+\begin{teorema}[Cotas fundamentales {\cite[§5.1]{Nesterov}}]\label{teo:sc-cotas}
+Sea $f$ autoconcordante estándar, $x\in\dom f$ y $r=\nrm{y-x}_x$. Con
+$\omega(\tau)=\tau-\log(1+\tau)$ y $\omega_*(\tau)=-\tau-\log(1-\tau)$:
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{Elipsoide de Dikin}: si $r<1$ entonces $y\in\dom f$; es decir, $W(x,1)\subseteq\dom f$.
+  \item \textbf{Hessiano}: si $r<1$,
+  \begin{equation}\label{eq:sc-hess}
+    (1-r)^2\,\nabla^2 f(x)\;\preceq\;\nabla^2 f(y)\;\preceq\;\frac{1}{(1-r)^2}\,\nabla^2 f(x).
+  \end{equation}
+  \item \textbf{Cota inferior}: para todo $y\in\dom f$, $\;f(y)\ge f(x)+\ip{\nabla f(x)}{y-x}+\omega(r)$.
+  \item \textbf{Cota superior}: si $r<1$, $\;f(y)\le f(x)+\ip{\nabla f(x)}{y-x}+\omega_*(r)$.
+\end{enumerate}
+\end{teorema}
+
+Como $\omega(\tau)\approx\tau^2/2\approx\omega_*(\tau)$ para $\tau$ pequeño, (iii) y (iv) dicen que cerca de $x$ la
+función es, en la norma local, casi exactamente una cuadrática de curvatura~$1$. Lejos de $x$ la cota
+inferior crece solo linealmente ($\omega(\tau)\sim\tau$) y la superior explota en $\tau=1$: nada se garantiza
+fuera del elipsoide de Dikin.
+
+\begin{ideaclave}
+Las desigualdades \eqref{eq:sc-hess} son el análogo de $\mu I\preceq\nabla^2 f\preceq LI$, pero con dos
+diferencias decisivas: comparan el hessiano \emph{consigo mismo en un punto cercano} (no con la identidad) y
+las «constantes» $(1-r)^{\pm2}$ son \emph{universales}: no dependen de la función ni de los datos.
+\end{ideaclave}
+
+\section{Decremento de Newton y análisis del método}
+
+\begin{definicion}[Decremento de Newton]\label{def:decremento}
+\[ \lamf(x)\;=\;\nrm{\nabla f(x)}_x^{*}\;=\;\bigl(\nabla f(x)\T\nabla^2 f(x)^{-1}\nabla f(x)\bigr)^{1/2}. \]
+\end{definicion}
+
+Tres lecturas equivalentes, todas útiles: (1) $\lamf(x)=\nrm{\vne}_x$ es la longitud del paso de Newton en la
+norma local; (2) $\lamf(x)^2=-\ip{\nabla f(x)}{\vne}$ es la derivada direccional que usa la condición de Armijo;
+(3) $\tfrac12\lamf(x)^2$ es lo que el modelo cuadrático \eqref{eq:newton-modelo} predice que bajará $f$.
+Además $\lamf$ es invariante afín, y por eso es el criterio de parada natural.
+
+\begin{proposicion}[El decremento acota el error]\label{prop:gap-lambda}
+Si $f$ es autoconcordante estándar, acotada inferiormente, y $\lamf(x)<1$, entonces
+\[ f(x)-f^\star\;\le\;\omega_*(\lamf(x))=-\lamf(x)-\log(1-\lamf(x)), \]
+y en particular $f(x)-f^\star\le\lamf(x)^2$ siempre que $\lamf(x)\le 0.68$.
+\end{proposicion}
+
+\begin{proof}
+Por el teorema~\ref{teo:sc-cotas}(iii) y Cauchy--Schwarz en las normas local y dual,
+$f(y)\ge f(x)-\lamf(x)\,r+\omega(r)$ con $r=\nrm{y-x}_x$. Minimizando en $r\ge0$ (el mínimo está en
+$r=\lamf/(1-\lamf)$) resulta $f(y)\ge f(x)-\omega_*(\lamf(x))$ para todo $y$. La segunda afirmación es la
+desigualdad numérica $\omega_*(\tau)\le\tau^2$ en $[0,\,0.68]$.
+\end{proof}
+
+\begin{teorema}[Newton amortiguado: descenso garantizado]\label{teo:sc-damped}
+Sea $f$ autoconcordante estándar. El paso $x^+=x+\frac{1}{1+\lamf(x)}\,\vne$ pertenece a $\dom f$ y
+\[ f(x^+)\;\le\;f(x)-\omega(\lamf(x))=f(x)-\lamf(x)+\log(1+\lamf(x)). \]
+\end{teorema}
+
+\begin{proof}
+Sea $\lambda=\lamf(x)$. Para $s\lambda<1$, el teorema~\ref{teo:sc-cotas}(iv) con $y=x+s\vne$ da
+$f(x+s\vne)\le f(x)-s\lambda^2+\omega_*(s\lambda)$. El lado derecho se minimiza en $s=1/(1+\lambda)$, donde
+$s\lambda=\lambda/(1+\lambda)<1$, y vale
+$f(x)-\tfrac{\lambda^2}{1+\lambda}-\tfrac{\lambda}{1+\lambda}-\log\bigl(1-\tfrac{\lambda}{1+\lambda}\bigr)=f(x)-\lambda+\log(1+\lambda)$.
+\end{proof}
+
+Mientras $\lamf(x)\ge\eta$, cada iteración baja $f$ en al menos la constante $\omega(\eta)$: esta es la
+\emph{fase amortiguada}. Cuando $\lamf$ es pequeño empieza la \emph{fase cuadrática}:
+
+\begin{teorema}[Convergencia cuadrática {\cite[§5.2]{Nesterov}}]\label{teo:sc-quad}
+Sea $f$ autoconcordante estándar y $\lamf(x)<1$. El paso completo $x^+=x+\vne$ satisface
+\[ \lamf(x^+)\;\le\;\Bigl(\frac{\lamf(x)}{1-\lamf(x)}\Bigr)^{2}. \]
+En particular, si $\lamf(x)\le\tfrac14$ entonces $\lamf(x^+)\le2\,\lamf(x)^2$.
+\end{teorema}
+
+\begin{proof}[Esquema]
+Como $\nabla f(x)+\nabla^2 f(x)\vne=0$, se tiene
+$\nabla f(x^+)=\int_0^1\bigl(\nabla^2 f(x+\tau\vne)-\nabla^2 f(x)\bigr)\vne\,d\tau$. Por \eqref{eq:sc-hess} con
+$r=\tau\lamf(x)$, la diferencia de hessianos está acotada, en la métrica de $\nabla^2 f(x)$, por
+$(1-\tau\lambda)^{-2}-1$, con $\lambda=\lamf(x)$; integrando resulta $\nrm{\nabla f(x^+)}_x^{*}\le\lambda^2/(1-\lambda)$. Pasar de la norma dual en
+$x$ a la norma dual en $x^+$ cuesta otro factor $(1-\lambda)^{-1}$, de nuevo por \eqref{eq:sc-hess}.
+\end{proof}
+
+Combinando ambas fases con la búsqueda lineal con retroceso se obtiene el teorema de complejidad que servirá
+de modelo para Newton Sketch.
+
+\begin{teorema}[Complejidad de Newton para funciones autoconcordantes {\cite[§9.6.4]{BV}}]\label{teo:sc-complejidad}
+Sea $f$ autoconcordante estándar, estrictamente convexa y acotada inferiormente. El método de Newton con
+búsqueda lineal con retroceso de parámetros $(a,b)$ alcanza $f(x)-f^\star\le\delta$ en a lo sumo
+\[ \frac{f(x_0)-f^\star}{\gamma}\;+\;\log_2\log_2\frac1\delta \qquad\text{iteraciones},\qquad
+   \gamma=\frac{a\,b\,(1-2a)^2}{20-8a}. \]
+La transición entre fases ocurre en $\lamf(x)\le\eta=(1-2a)/4$.
+\end{teorema}
+
+Compárese con el teorema~\ref{teo:newton-clasico}: \textbf{no aparece ninguna constante del problema}. Solo
+intervienen los parámetros de la búsqueda lineal y la distancia inicial al óptimo \emph{en valor de la función}.
+Con $a=0.1$, $b=0.5$ se obtiene $\gamma\approx1/600$; la cota es muy pesimista en la práctica (lo habitual son
+unas pocas decenas de iteraciones), pero su estructura es la correcta.
+
+\section{Relación con las funciones \texorpdfstring{$\mu$}{mu}-fuertemente convexas y \texorpdfstring{$L$}{L}-suaves}\label{sec:sc-vs-muL}
+
+Son tres clases distintas que se solapan. Conviene tener claro qué implica qué.
+
+\begin{proposicion}[Fuertemente convexa con hessiano Lipschitz $\Rightarrow$ autoconcordante]\label{prop:muL-sc}
+Si $f$ es $\mu$-fuertemente convexa y su hessiano es $\LH$-Lipschitz, entonces $f$ es autoconcordante con constante
+\[ M=\frac{\LH}{2\,\mu^{3/2}}, \]
+y por tanto $\dfrac{\LH^2}{4\mu^3}\,f$ es autoconcordante estándar.
+\end{proposicion}
+
+\begin{proof}
+Que el hessiano sea $\LH$-Lipschitz implica $\abs{D^3f(x)[h,h,h]}\le\LH\nrm{h}_2^3$. Por convexidad fuerte,
+$\nrm{h}_2^2\le\tfrac1\mu\,h\T\nabla^2 f(x)h$. Luego
+$\abs{D^3f(x)[h,h,h]}\le\LH\,\mu^{-3/2}(h\T\nabla^2 f(x)h)^{3/2}$, que es \eqref{eq:sc-nd} con $2M=\LH\mu^{-3/2}$.
+\end{proof}
+
+\begin{proposicion}[Recíproco parcial]\label{prop:sc-muL}
+Si $f$ es autoconcordante con constante $M$ y además $\nabla^2 f(x)\preceq LI$ en un conjunto convexo, entonces
+el hessiano es Lipschitz en ese conjunto con constante $\LH=2ML^{3/2}$.
+\end{proposicion}
+
+\begin{proof}
+$\abs{D^3f(x)[h,h,h]}\le2M(h\T\nabla^2 f(x)h)^{3/2}\le2ML^{3/2}\nrm{h}_2^3$. Para una forma trilineal simétrica el
+máximo de $\abs{T[u,v,w]}$ sobre vectores unitarios se alcanza con $u=v=w$, luego la norma de operador de
+$D^3f(x)$ es a lo sumo $2ML^{3/2}$, y esa norma acota la constante de Lipschitz de $\nabla^2 f$.
+\end{proof}
+
+Así, \emph{dentro} de la clase de funciones con $\mu I\preceq\nabla^2 f\preceq LI$, ser autoconcordante (con
+alguna constante) equivale a tener hessiano Lipschitz. Fuera de esa clase ninguna noción implica la otra:
+
+\begin{proposicion}[Ninguna implicación general]\label{prop:contraejemplos}
+\begin{enumerate}[label=(\alph*)]
+  \item \textbf{Autoconcordante $\not\Rightarrow$ fuertemente convexa ni suave.} $f(t)=-\log t$ en $(0,\infty)$:
+        $f''(t)=1/t^2$ tiende a $0$ cuando $t\to\infty$ (no hay $\mu>0$) y a $\infty$ cuando $t\to0$ (no hay $L<\infty$).
+        Una función lineal es autoconcordante y ni siquiera es estrictamente convexa.
+  \item \textbf{Fuertemente convexa y suave $\not\Rightarrow$ autoconcordante.} $f(t)=\tfrac12t^2+\tfrac{4}{15}\abs{t}^{5/2}$:
+        $f''(t)=1+\abs{t}^{1/2}\in[1,2]$ en $[-1,1]$, pero $f'''(t)=\pm\tfrac12\abs{t}^{-1/2}$ no está acotada
+        cerca de $0$, así que ningún $M$ finito sirve.
+\end{enumerate}
+\end{proposicion}
+
+\subsection{La relación conceptual: buen condicionamiento local universal}
+
+La manera más útil de entender la relación es reescribir \eqref{eq:sc-hess} como una afirmación sobre $\mu$ y
+$L$ \emph{en otra métrica}.
+
+\begin{proposicion}[Toda función autoconcordante es localmente bien condicionada en su norma local]\label{prop:cond-local}
+Sea $f$ autoconcordante estándar, $x\in\dom f$ con $\nabla^2 f(x)\succ0$ y $r\in(0,1)$. En el elipsoide de
+Dikin $W(x,r)$, la función $f$ es $(1-r)^2$-fuertemente convexa y $(1-r)^{-2}$-suave \emph{respecto de la
+norma $\nrm{\cdot}_x$}. Su número de condición local es, por tanto, a lo sumo $(1-r)^{-4}$: por ejemplo, $16$
+en el elipsoide de radio $\tfrac12$, sea cual sea la función.
+\end{proposicion}
+
+\begin{proof}
+Es \eqref{eq:sc-hess}: en las variables $z=\nabla^2 f(x)^{1/2}y$, la norma $\nrm{\cdot}_x$ es la euclídea y el
+hessiano de $f$ queda entre $(1-r)^2I$ y $(1-r)^{-2}I$ en todo el elipsoide.
+\end{proof}
+
+\begin{ideaclave}[Tres maneras de mirar lo mismo]
+\begin{itemize}
+  \item Una función \textbf{$\mu$-fuertemente convexa y $L$-suave} tiene curvatura controlada \emph{globalmente
+        y en la métrica euclídea}; el control puede ser malo ($\kappa$ grande).
+  \item Una función \textbf{autoconcordante} tiene curvatura controlada \emph{localmente y en su propia
+        métrica}; el control es siempre bueno (constantes universales), pero solo vale dentro del elipsoide de Dikin.
+  \item El \textbf{método de Newton} es descenso de gradiente en la métrica local: $\vne=-\nabla^2 f(x)^{-1}\nabla f(x)$
+        es el gradiente respecto del producto interno $\ip{u}{v}_x=u\T\nabla^2 f(x)v$. Por eso hereda el buen
+        condicionamiento local y su complejidad no depende de $\kappa$.
+\end{itemize}
+\end{ideaclave}
+
+\begin{observacion}[En conjuntos de nivel acotados]\label{obs:nivel}
+Si $f$ es autoconcordante y estrictamente convexa y el conjunto de nivel $\{x:f(x)\le f(x_0)\}$ es compacto,
+el hessiano alcanza allí un mínimo $\mu>0$ y un máximo $L<\infty$ de sus valores propios extremos: restringida a
+ese conjunto, $f$ \emph{es} $\mu$-fuertemente convexa y $L$-suave. Pero $\kappa=L/\mu$ puede ser astronómico
+(piénsese en una barrera cerca de la frontera). El descenso de gradiente paga ese $\kappa$; Newton no.
+\end{observacion}
+
+\subsection{El caso de la regresión logística regularizada}
+
+La pérdida logística no es autoconcordante (ejemplo~\ref{ej:no-sc}), pero al sumarle un término fuertemente
+convexo sí lo es, con una constante que depende de $\mu$. Este es el mecanismo por el que la regresión
+logística regularizada entra en el marco de Newton Sketch.
+
+\begin{proposicion}\label{prop:logistica-sc}
+Sea $f(x)=\sum_{i=1}^n\varphi_i(a_i\T x)+\tfrac\mu2\nrm{x}_2^2$, con $\varphi_i$ convexas que cumplen
+$\abs{\varphi_i'''}\le\varphi_i''$, y sea $R=\max_i\nrm{a_i}_2$. Entonces $f$ es autoconcordante con constante
+\[ M=\frac{R}{2\sqrt{\mu}},\qquad\text{y por tanto}\quad \frac{R^2}{4\mu}\,f\ \text{ es autoconcordante estándar.} \]
+\end{proposicion}
+
+\begin{proof}
+Sea $H=\nabla^2 f(x)=\sum_i\varphi_i''(a_i\T x)a_ia_i\T+\mu I$. Entonces
+\[ \abs{D^3f(x)[h,h,h]}=\Bigl|\sum_i\varphi_i'''(a_i\T x)(a_i\T h)^3\Bigr|
+   \le\max_i\abs{a_i\T h}\,\sum_i\varphi_i''(a_i\T x)(a_i\T h)^2\le R\nrm{h}_2\;h\T Hh . \]
+Como $H\succeq\mu I$, $\nrm{h}_2\le\mu^{-1/2}(h\T Hh)^{1/2}$, y queda
+$\abs{D^3f(x)[h,h,h]}\le\tfrac{R}{\sqrt\mu}(h\T Hh)^{3/2}$.
+\end{proof}
+
+\section{Barreras y método de punto interior}\label{sec:barrera}
+
+La aplicación más importante de la autoconcordancia es convertir un problema con restricciones en una
+sucesión de problemas sin restricciones. Para
+\begin{equation}\label{eq:prob-restr}
+  \min_x\; c(x)\quad\text{s.a.}\quad a_i\T x\le b_i,\ \ i=1,\dots,n,
+\end{equation}
+con $c$ convexa (lineal o cuadrática en nuestros ejemplos), se define la \textbf{barrera logarítmica}
+$\phi(x)=-\sum_{i=1}^n\log(b_i-a_i\T x)$ y, para cada $\theta>0$, el problema de \emph{centrado}
+\begin{equation}\label{eq:centrado}
+  x^\star(\theta)=\argmin_x\;F_\theta(x),\qquad F_\theta(x)=\theta\,c(x)+\phi(x).
+\end{equation}
+La curva $\theta\mapsto x^\star(\theta)$ es la \textbf{trayectoria central}. Se cumple
+$c(x^\star(\theta))-c^\star\le n/\theta$: el punto central es $n/\theta$-subóptimo.
+
+\begin{algorithm}[ht]
+\caption{Método de barrera (seguimiento de la trayectoria central)}\label{alg:barrera}
+\begin{algorithmic}[1]
+\Require $x$ estrictamente factible, $\theta_0>0$, factor $\mu_b>1$, tolerancia $\delta$
+\State $\theta\gets\theta_0$
+\Repeat
+  \State \textbf{Centrado:} partiendo de $x$, minimizar $F_\theta$ con Newton (o Newton Sketch); $x\gets x^\star(\theta)$
+  \State \textbf{si} $n/\theta\le\delta$ \textbf{entonces devolver} $x$
+  \State $\theta\gets\mu_b\,\theta$
+\Until{convergencia}
+\end{algorithmic}
+\end{algorithm}
+
+Si $c$ es lineal o cuadrática convexa, $F_\theta$ es autoconcordante estándar para todo $\theta$
+(proposición~\ref{prop:sc-calculo}), de modo que cada centrado se analiza con el
+teorema~\ref{teo:sc-complejidad}. El número de centrados es $\lceil\log(n/(\theta_0\delta))/\log\mu_b\rceil$, y
+se puede probar que cada uno requiere un número de pasos de Newton acotado en función solo de $n$ y $\mu_b$;
+con la elección $\mu_b=1+1/\sqrt n$ el total es $\cO(\sqrt n\log(n/(\theta_0\delta)))$.
+
+El hessiano de la barrera es $\nabla^2\phi(x)=A\T\diag(1/s_i^2)A$ con holguras $s_i=b_i-a_i\T x$, y su raíz
+cuadrada es $\diag(1/s_i)A\in\R^{n\times d}$: \textbf{cuando hay muchas más restricciones que variables,
+estamos exactamente en la situación \eqref{eq:problema-general}}.
+
+\begin{resumen}
+\begin{itemize}
+  \item Autoconcordancia: $\abs{\varphi'''}\le2M(\varphi'')^{3/2}$ en cada recta; es invariante afín.
+  \item Consecuencia central: $(1-r)^2H(x)\preceq H(y)\preceq(1-r)^{-2}H(x)$ si $r=\nrm{y-x}_x<1$.
+  \item El decremento $\lamf$ mide el error ($f-f^\star\le\lamf^2$) y gobierna las dos fases de Newton.
+  \item Complejidad de Newton: $(f(x_0)-f^\star)/\gamma+\log_2\log_2(1/\delta)$, sin constantes del problema.
+  \item $\mu$-fuerte $+$ hessiano Lipschitz $\Rightarrow$ autoconcordante con $M=\LH/(2\mu^{3/2})$; en general ninguna clase contiene a la otra.
+  \item Las barreras logarítmicas son autoconcordantes y su hessiano es $B\T B$ con $B=\diag(1/s)A$.
+\end{itemize}
+\end{resumen}
+
+\part{Álgebra lineal numérica aleatorizada}
+\chapter{Matrices de \emph{sketch}}\label{cap:sketch}
+
+Un \emph{sketch} (boceto, esbozo) de una matriz alta $A\in\R^{n\times d}$ es una matriz mucho más pequeña
+$SA\in\R^{m\times d}$, con $m\ll n$, que conserva la información geométrica que nos importa. Este capítulo
+describe las matrices $S$ principales: cómo se construyen, cuánto cuesta aplicarlas y por qué funcionan. La
+teoría que cuantifica «funcionar» se desarrolla en el capítulo~\ref{cap:embed}.
+
+\section{Qué se le pide a una matriz de \emph{sketch}}
+
+\begin{definicion}[Matriz de \emph{sketch}]\label{def:sketch}
+Una matriz de \emph{sketch} es una matriz aleatoria $S\in\R^{m\times n}$, $m\ll n$, normalizada de modo que
+\begin{equation}\label{eq:isotropia}
+  \E\bigl[S\T S\bigr]=I_n .
+\end{equation}
+\end{definicion}
+
+La normalización \eqref{eq:isotropia} dice que $S$ conserva las normas \emph{en media}:
+$\E\nrm{Sx}_2^2=x\T\E[S\T S]x=\nrm{x}_2^2$ para todo $x$ fijo. Lo que distingue un buen \emph{sketch} de uno malo
+es la \emph{concentración}: que $\nrm{Sx}_2^2\approx\nrm{x}_2^2$ con alta probabilidad y, sobre todo, que
+ocurra \emph{simultáneamente para todos los $x$ de un subespacio}. Los tres criterios de diseño son:
+\begin{enumerate}
+  \item \textbf{Tamaño}: cuántas filas $m$ hacen falta para una distorsión $\eps$ dada.
+  \item \textbf{Coste de aplicación}: cuántas operaciones requiere calcular $SA$.
+  \item \textbf{Olvido de los datos} (\emph{obliviousness}): si $S$ se puede generar sin mirar $A$.
+\end{enumerate}
+
+\section{\emph{Sketches} densos: gaussiano y subgaussiano}
+
+\begin{definicion}[\emph{Sketch} gaussiano]
+$S=\frac{1}{\sqrt m}G$, donde $G\in\R^{m\times n}$ tiene entradas independientes $N(0,1)$.
+\end{definicion}
+
+\paragraph{Cómo funciona.} Cada fila de $SA$ es una combinación lineal aleatoria de \emph{todas} las filas de
+$A$. La propiedad que hace del caso gaussiano el más limpio de analizar es la \textbf{invariancia por
+rotaciones}: si $U\in\R^{n\times d}$ tiene columnas ortonormales, $GU$ es de nuevo una matriz gaussiana
+estándar, de tamaño $m\times d$. Por tanto $SU$ se comporta como una matriz gaussiana \emph{que ya no
+depende de $n$}, y sus valores singulares satisfacen (Davidson--Szarek), con probabilidad al menos $1-2e^{-m\tau^2/2}$,
+\begin{equation}\label{eq:gauss-sv}
+  1-\sqrt{d/m}-\tau\;\le\;\sigma_{\min}(SU)\;\le\;\sigma_{\max}(SU)\;\le\;1+\sqrt{d/m}+\tau .
+\end{equation}
+La distorsión es, pues, $\eps\approx2\sqrt{d/m}$: para $\eps$ fijo basta $m\asymp d/\eps^2$, sin logaritmos.
+
+\paragraph{Coste.} Formar $SA$ es un producto denso: $\cO(mnd)$. Con $m\asymp d$ esto es $\cO(nd^2)$, lo mismo
+que formar $A\T A$. El \emph{sketch} gaussiano es la referencia teórica, no la opción práctica.
+
+\paragraph{Variantes.} Los mismos resultados valen, con otras constantes, para entradas independientes
+\emph{subgaussianas} de media cero y varianza $1/m$; por ejemplo signos de Rademacher $\pm1/\sqrt m$.
+
+\section{Transformada de Hadamard aleatorizada submuestreada (SRHT)}
+
+\begin{definicion}[SRHT]\label{def:srht}
+Sea $n$ una potencia de $2$. La SRHT (\emph{subsampled randomized Hadamard transform}) es
+\[ S=\sqrt{\frac{n}{m}}\;R\,H\,D, \]
+donde
+\begin{itemize}
+  \item $D\in\R^{n\times n}$ es diagonal con signos $\pm1$ independientes y uniformes;
+  \item $H\in\R^{n\times n}$ es la matriz de Walsh--Hadamard normalizada, definida por
+        $H_1=(1)$, $H_{2k}=\frac{1}{\sqrt2}\begin{pmatrix}H_k&H_k\\H_k&-H_k\end{pmatrix}$; es ortogonal y todas sus entradas valen $\pm1/\sqrt n$;
+  \item $R\in\R^{m\times n}$ selecciona $m$ filas al azar, uniformemente.
+\end{itemize}
+\end{definicion}
+
+\paragraph{Cómo funciona.} El muestreo uniforme de filas es el \emph{sketch} más barato posible, pero fracasa si
+unas pocas filas concentran la información (sección~\ref{sec:muestreo}). La SRHT lo arregla
+\emph{mezclando antes de muestrear}: la rotación aleatoria $HD$ reparte la «masa» de cada vector entre todas
+las coordenadas. Es una manifestación del principio de incertidumbre: un vector concentrado en pocas
+coordenadas tiene transformada de Hadamard dispersa; los signos aleatorios $D$ impiden que un vector esté
+adversarialmente alineado con $H$. En el lenguaje del capítulo~\ref{cap:embed}, $HD$ \emph{uniformiza las
+puntuaciones de palanca}: con probabilidad al menos $1-p$,
+\begin{equation}\label{eq:srht-aplana}
+  \max_{1\le i\le n}\nrm{e_i\T HDU}_2\;\le\;\sqrt{\frac dn}+\sqrt{\frac{8\log(n/p)}{n}} ,
+\end{equation}
+mientras que el valor medio de $\nrm{e_i\T HDU}_2^2$ es $d/n$ (Tropp, 2011). Tras la mezcla, todas las filas son
+casi igual de importantes y el muestreo uniforme es seguro.
+
+\begin{ejemplo}[SRHT con $n=4$]
+\[ H_4=\frac12\begin{pmatrix}1&1&1&1\\1&-1&1&-1\\1&1&-1&-1\\1&-1&-1&1\end{pmatrix}. \]
+Para el vector $x=e_1=(1,0,0,0)\T$, concentrado en una coordenada, $HDx=\pm\frac12(1,1,1,1)\T$: perfectamente
+disperso. Muestrear $m=2$ coordenadas de $x$ daría norma $0$ con probabilidad $\tfrac12$; muestrear $2$
+coordenadas de $HDx$ y reescalar por $\sqrt{n/m}=\sqrt2$ da siempre norma exactamente $1$.
+\end{ejemplo}
+
+\paragraph{Coste.} Multiplicar por $D$ cuesta $\cO(nd)$; aplicar $H$ a las $d$ columnas con la transformada
+rápida de Walsh--Hadamard cuesta $\cO(nd\log n)$ (y $\cO(nd\log m)$ con una variante podada que calcula solo
+las $m$ coordenadas necesarias). No se almacena ninguna matriz. Si $n$ no es potencia de $2$ se rellena $A$
+con filas de ceros. Otras transformadas ortogonales con entradas de módulo $1/\sqrt n$ (Fourier, coseno)
+sirven igual; la familia se conoce como \emph{sistemas ortogonales aleatorizados} (ROS).
+
+\section{\emph{Sketches} dispersos: CountSketch, SJLT y OSNAP}
+
+\begin{definicion}[CountSketch y SJLT]\label{def:countsketch}
+En una SJLT (\emph{sparse Johnson--Lindenstrauss transform}) con $s$ no nulos por columna, cada columna de
+$S\in\R^{m\times n}$ tiene exactamente $s$ entradas no nulas, situadas en filas elegidas al azar y con valores
+$\pm1/\sqrt s$ con signos independientes. El caso $s=1$ es \textbf{CountSketch}: $S_{h(i),i}=\sigma_i$, con
+$h:\{1,\dots,n\}\to\{1,\dots,m\}$ una función de dispersión (\emph{hash}) aleatoria y $\sigma_i=\pm1$.
+\end{definicion}
+
+\paragraph{Cómo funciona.} Con $s=1$, calcular $SA$ consiste en recorrer las filas de $A$ una sola vez: la fila
+$i$ se multiplica por el signo $\sigma_i$ y se \emph{suma} a la fila $h(i)$ de $SA$ («cubeta» $h(i)$).
+\[ \underbrace{\begin{pmatrix}0&-1&0&0&+1&0\\+1&0&0&-1&0&0\\0&0&+1&0&0&+1\end{pmatrix}}_{S\ (m=3,\ n=6)}
+   \begin{pmatrix}a_1\T\\a_2\T\\a_3\T\\a_4\T\\a_5\T\\a_6\T\end{pmatrix}
+   =\begin{pmatrix}-a_2\T+a_5\T\\ a_1\T-a_4\T\\ a_3\T+a_6\T\end{pmatrix}. \]
+Los signos aleatorios hacen que los términos cruzados se cancelen en media:
+$\E[(SA)\T(SA)]=\sum_{i,j}\E[\sigma_i\sigma_j\mathbf 1\{h(i)=h(j)\}]\,a_ia_j\T=\sum_ia_ia_i\T=A\T A$.
+
+\paragraph{Coste.} $\cO(\nnz(A))$ para $s=1$ y $\cO(s\cdot\nnz(A))$ en general: \emph{tiempo proporcional a la
+dispersidad de los datos}, lo mejor posible. Es un único pase por los datos y admite datos en flujo.
+
+\paragraph{El precio.} Dos filas «importantes» que caen en la misma cubeta se mezclan de forma irreversible.
+Si el subespacio tiene $d$ direcciones importantes, evitar colisiones entre ellas exige, por la paradoja del
+cumpleaños, $m\gtrsim d^2$ cubetas. Esta dependencia cuadrática es inevitable para $s=1$; tomando
+$s\asymp\log d$ no nulos por columna (construcción OSNAP de Nelson y Nguyên) se recupera $m\asymp d\log d$.
+El experimento de la sección~\ref{sec:exp-embed} muestra el fenómeno con nitidez.
+
+\section{Muestreo de filas}\label{sec:muestreo}
+
+\begin{definicion}[\emph{Sketch} de muestreo]
+Dada una distribución $(p_1,\dots,p_n)$ sobre las filas, cada fila de $S$ es, independientemente,
+$e_i\T/\sqrt{m\,p_i}$ con probabilidad $p_i$. Así, $SA$ consta de $m$ filas de $A$ reescaladas.
+\end{definicion}
+
+El reescalado garantiza \eqref{eq:isotropia}. Las tres elecciones habituales son:
+\begin{itemize}
+  \item \textbf{Uniforme}, $p_i=1/n$. Coste nulo. Funciona si y solo si $A$ es \emph{incoherente} (ninguna fila
+        es mucho más importante que las demás).
+  \item \textbf{Por puntuaciones de palanca}, $p_i=\ell_i/d$ con $\ell_i=a_i\T(A\T A)^{-1}a_i$. Funciona siempre
+        con $m\asymp d\log d/\eps^2$, pero calcular $\ell_i$ exactamente cuesta tanto como resolver el problema;
+        se usan aproximaciones.
+  \item \textbf{Por norma de filas}, $p_i\propto\nrm{a_i}_2^2$. Barato; garantías más débiles (en norma de Frobenius).
+\end{itemize}
+A diferencia de los anteriores, los dos últimos \emph{no son ajenos a los datos}: $S$ depende de $A$.
+
+\begin{observacion}[Newton submuestreado]\label{obs:subsampled}
+Cuando $f(x)=\frac1n\sum_i f_i(x)$, aproximar el hessiano con un subconjunto aleatorio de sumandos es
+exactamente aplicar un \emph{sketch} de muestreo uniforme a la raíz del hessiano. Los métodos de Newton
+submuestreado (Erdogdu y Montanari; Roosta-Khorasani y Mahoney) son, por tanto, casos particulares de Newton
+Sketch. En optimización estocástica por escenarios, \emph{muestrear escenarios} es muestrear filas
+(capítulo~\ref{cap:estoc}).
+\end{observacion}
+
+\section{Comparación}
+
+\begin{table}[ht]
+\centering\small
+\caption{Matrices de \emph{sketch} principales. La columna $m$ indica el número de filas suficiente para un
+encaje de subespacio con distorsión $\eps$ y probabilidad de fallo $p$ (teoremas del capítulo~\ref{cap:embed}).}
+\label{tab:sketches}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\emph{Sketch} & Tamaño $m$ suficiente & Coste de $SA$ & ¿Ajeno a los datos? \\
+\midrule
+Gaussiano & $\dfrac{d+\log(1/p)}{\eps^2}$ & $mnd$ & sí \\[8pt]
+SRHT & $\dfrac{(d+\log(n/p))\log(d/p)}{\eps^2}$ & $nd\log n$ & sí \\[8pt]
+CountSketch ($s=1$) & $\dfrac{d^2}{\eps^2\,p}$ & $\nnz(A)$ & sí \\[8pt]
+OSNAP ($s\asymp\log(d/p)/\eps$) & $\dfrac{d\log(d/p)}{\eps^2}$ & $s\cdot\nnz(A)$ & sí \\[8pt]
+Muestreo por palanca & $\dfrac{d\log(d/p)}{\eps^2}$ & $\nnz(A)$ + cálculo de $\ell_i$ & no \\[8pt]
+Muestreo uniforme & $\dfrac{\mu(A)\,d\log(d/p)}{\eps^2}$ & $md$ & sí \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+En la tabla~\ref{tab:sketches} se omiten constantes universales y $\mu(A)\in[1,n/d]$ es la coherencia
+(definición~\ref{def:palanca}). La elección práctica suele ser: SRHT para datos densos, CountSketch o SJLT
+para datos dispersos o cuando el tiempo de aplicación domina, y muestreo cuando solo se puede acceder a filas.
+
+\begin{resumen}
+\begin{itemize}
+  \item Un \emph{sketch} $S$ ($m\times n$, $\E[S\T S]=I$) comprime $A$ a $SA$ conservando normas en media.
+  \item Gaussiano: el mejor $m$ ($\asymp d/\eps^2$) y el peor coste ($mnd$).
+  \item SRHT: mezcla ($HD$) y luego muestrea; $m\asymp d\log d/\eps^2$, coste $nd\log n$.
+  \item CountSketch: suma con signos en cubetas; coste $\nnz(A)$, pero $m\asymp d^2/\eps^2$.
+  \item Muestreo: trivial de aplicar; necesita incoherencia o probabilidades adaptadas (palanca).
+\end{itemize}
+\end{resumen}
+
+\chapter{Teoría de subespacios encajados}\label{cap:embed}
+
+El término inglés es \emph{subspace embedding}; en español se encuentra como «encaje de subespacio»,
+«inmersión de subespacio» o, coloquialmente, «subembedding». La idea: una matriz $S$ con muy pocas filas
+que, aplicada a \emph{todos} los vectores de un subespacio de dimensión $d$, conserva sus normas salvo un
+factor $1\pm\eps$. Es la herramienta que convierte «$S$ conserva normas en media» en «$SA$ puede sustituir a
+$A$ en un algoritmo».
+
+\section{El punto de partida: Johnson--Lindenstrauss}
+
+\begin{lema}[Concentración para un vector fijo]\label{lem:jl-dist}
+Sea $S\in\R^{m\times n}$ gaussiana (entradas $N(0,1/m)$ independientes) y $x\in\R^n$ fijo. Para $\eps\in(0,1)$,
+\[ \Prob\Bigl(\,\bigl|\nrm{Sx}_2^2-\nrm{x}_2^2\bigr|>\eps\nrm{x}_2^2\Bigr)\;\le\;2\exp\bigl(-m\eps^2/12\bigr). \]
+\end{lema}
+
+\begin{proof}
+Por homogeneidad, $\nrm{x}_2=1$. Entonces $Sx\sim N(0,I_m/m)$ y $m\nrm{Sx}_2^2\sim\chi^2_m$. Las cotas de Chernoff
+para la $\chi^2$ (apéndice~\ref{ap:conc}) dan
+$\Prob(\chi^2_m\ge(1+\eps)m)\le\exp(-m(\eps^2/4-\eps^3/6))\le e^{-m\eps^2/12}$ y $\Prob(\chi^2_m\le(1-\eps)m)\le e^{-m\eps^2/4}$.
+\end{proof}
+
+\begin{teorema}[Lema de Johnson--Lindenstrauss]\label{teo:jl}
+Sean $x_1,\dots,x_N\in\R^n$ y $\eps,p\in(0,1)$. Si $m\ge12\,\eps^{-2}\log(N^2/p)$ y $S$ es gaussiana, entonces
+con probabilidad al menos $1-p$,
+\[ (1-\eps)\nrm{x_i-x_j}_2^2\;\le\;\nrm{Sx_i-Sx_j}_2^2\;\le\;(1+\eps)\nrm{x_i-x_j}_2^2\qquad\text{para todo } i,j. \]
+\end{teorema}
+
+\begin{proof}
+Se aplica el lema~\ref{lem:jl-dist} a cada uno de los $\binom N2<N^2/2$ vectores $x_i-x_j$ y la cota de la unión:
+la probabilidad de fallo es a lo sumo $N^2e^{-m\eps^2/12}\le p$.
+\end{proof}
+
+Lo notable es que $m$ depende de $\log N$ y \emph{no} de la dimensión ambiente $n$. Pero el lema habla de un
+conjunto \emph{finito}; un subespacio tiene infinitos vectores. El paso de uno a otro es el contenido de este capítulo.
+
+\section{Definición y formas equivalentes}
+
+\begin{definicion}[Encaje de subespacio]\label{def:embed}
+Sea $A\in\R^{n\times d}$ y $\eps\in(0,1)$. Una matriz $S\in\R^{m\times n}$ es un \textbf{encaje de subespacio
+con distorsión $\eps$} para $A$ (para $\col(A)$) si
+\begin{equation}\label{eq:embed}
+  (1-\eps)\nrm{Ax}_2^2\;\le\;\nrm{SAx}_2^2\;\le\;(1+\eps)\nrm{Ax}_2^2\qquad\text{para todo } x\in\R^d .
+\end{equation}
+Una distribución sobre matrices $S$ es un \textbf{encaje de subespacio ajeno a los datos} (\emph{oblivious
+subspace embedding}, OSE) con parámetros $(\eps,p,d)$ si, para \emph{cada} $A$ con $d$ columnas fijada de
+antemano, $S$ cumple \eqref{eq:embed} con probabilidad al menos $1-p$.
+\end{definicion}
+
+\begin{proposicion}[Formas equivalentes]\label{prop:embed-equiv}
+Sea $A$ de rango $d$ y $U\in\R^{n\times d}$ una base ortonormal de $\col(A)$. Son equivalentes:
+\begin{enumerate}[label=(\roman*)]
+  \item $S$ es un encaje con distorsión $\eps$ para $A$, es decir, \eqref{eq:embed}.
+  \item $\nrm{U\T S\T SU-I_d}_2\le\eps$.
+  \item Todos los valores singulares de $SU$ están en $[\sqrt{1-\eps},\sqrt{1+\eps}]$.
+  \item \textbf{Forma de Loewner:}\quad $(1-\eps)\,A\T A\;\preceq\;A\T S\T SA\;\preceq\;(1+\eps)\,A\T A$.
+\end{enumerate}
+\end{proposicion}
+
+\begin{proof}
+Todo vector de $\col(A)$ es $Uz$ con $\nrm{Uz}_2=\nrm{z}_2$, así que (i) dice
+\[ \abs{z\T(U\T S\T SU-I)z}\le\eps\nrm{z}_2^2\qquad\text{para todo }z, \]
+que para una matriz simétrica es (ii); y (ii) dice que
+los valores propios de $U\T S\T SU$, que son los cuadrados de los valores singulares de $SU$, están en
+$[1-\eps,1+\eps]$: es (iii). Por último, (i) escrita como $(1-\eps)x\T A\T Ax\le x\T A\T S\T SAx\le(1+\eps)x\T A\T Ax$ es (iv).
+\end{proof}
+
+\begin{ideaclave}[La forma (iv) es el puente con la optimización]
+Si $A=B(x)$ es la raíz cuadrada del hessiano, (iv) dice
+\[ (1-\eps)\,\nabla^2 f(x)\;\preceq\;B\T S\T SB\;\preceq\;(1+\eps)\,\nabla^2 f(x): \]
+el hessiano con \emph{sketch} aproxima al exacto \emph{espectralmente y en sentido relativo}, que es
+exactamente el tipo de error que el método de Newton tolera (capítulos~\ref{cap:ns} y~\ref{cap:ans}).
+\end{ideaclave}
+
+\section{De un vector a un subespacio: el argumento de la \texorpdfstring{$\eps$}{eps}-red}
+
+\begin{lema}[Basta comprobar en una red]\label{lem:red}
+Sea $M\in\R^{d\times d}$ simétrica y $\cN$ una $\tfrac14$-red de la esfera unidad $\mathbb S^{d-1}$ (todo punto
+de la esfera dista a lo sumo $\tfrac14$ de algún punto de $\cN$). Entonces $\nrm{M}_2\le2\max_{y\in\cN}\abs{y\T My}$.
+Existe una tal red con $\abs{\cN}\le9^d$.
+\end{lema}
+
+\begin{proof}
+Sea $x$ unitario con $\abs{x\T Mx}=\nrm{M}_2$ e $y\in\cN$ con $\nrm{x-y}_2\le\tfrac14$. Entonces
+$\abs{x\T Mx-y\T My}=\abs{x\T M(x-y)+(x-y)\T My}\le2\cdot\tfrac14\nrm{M}_2$, luego $\abs{y\T My}\ge\tfrac12\nrm{M}_2$.
+La cota de cardinalidad es el argumento volumétrico habitual: $(1+2/\rho)^d$ con $\rho=\tfrac14$.
+\end{proof}
+
+\begin{teorema}[El \emph{sketch} gaussiano es un encaje de subespacio]\label{teo:gauss-ose}
+Sea $S\in\R^{m\times n}$ gaussiana y $\eps,p\in(0,1)$. Si
+\[ m\;\ge\;\frac{48}{\eps^2}\Bigl(d\log9+\log\frac2p\Bigr), \]
+entonces, para cada $A\in\R^{n\times d}$ fija, $S$ es un encaje de subespacio con distorsión $\eps$ para $A$ con
+probabilidad al menos $1-p$. Es decir, basta $m=\cO\bigl((d+\log(1/p))/\eps^2\bigr)$.
+\end{teorema}
+
+\begin{proof}
+Sea $U$ una base ortonormal de $\col(A)$ y $M=U\T S\T SU-I_d$. Para $y$ unitario,
+$y\T My=\nrm{SUy}_2^2-1$, y $Uy$ es un vector unitario \emph{fijo} de $\R^n$: por el lema~\ref{lem:jl-dist} con
+$\eps/2$, $\Prob(\abs{y\T My}>\eps/2)\le2e^{-m\eps^2/48}$. Por la cota de la unión sobre la red del
+lema~\ref{lem:red}, con probabilidad al menos $1-2\cdot9^de^{-m\eps^2/48}\ge1-p$ se tiene
+$\max_{y\in\cN}\abs{y\T My}\le\eps/2$, y entonces $\nrm{M}_2\le\eps$, que es la forma (ii) de la proposición~\ref{prop:embed-equiv}.
+\end{proof}
+
+El mecanismo es general: \emph{concentración para un vector} $+$ \emph{red de tamaño exponencial en $d$}
+$\Rightarrow$ $m$ lineal en $d$. La dependencia $d/\eps^2$ es óptima: cualquier OSE necesita
+$m=\Omega(d/\eps^2)$ filas (Nelson y Nguyên, 2014).
+
+\section{Puntuaciones de palanca, coherencia y muestreo}
+
+\begin{definicion}[Puntuaciones de palanca y coherencia]\label{def:palanca}
+Sea $A\in\R^{n\times d}$ de rango $d$ y $U$ una base ortonormal de $\col(A)$. La \textbf{puntuación de palanca}
+(\emph{leverage score}) de la fila $i$ es
+\[ \ell_i=\nrm{e_i\T U}_2^2=a_i\T(A\T A)^{-1}a_i . \]
+La \textbf{coherencia} de $A$ es $\mu(A)=\frac nd\max_i\ell_i$.
+\end{definicion}
+
+Propiedades inmediatas: $0\le\ell_i\le1$; $\sum_i\ell_i=\nrm{U}_F^2=d$; no dependen de la base elegida; y
+$1\le\mu(A)\le n/d$. Una fila con $\ell_i\approx1$ es \emph{imprescindible}: hay una dirección del espacio columna
+que solo ella «ve». Una matriz con $\mu(A)\approx1$ es \emph{incoherente}: todas las filas importan por igual.
+
+\begin{teorema}[Muestreo por palanca y muestreo uniforme]\label{teo:muestreo}
+Sea $S$ un \emph{sketch} de muestreo con probabilidades $p_i$ y $\eps,p\in(0,1)$.
+\begin{enumerate}[label=(\alph*)]
+  \item Si $p_i=\ell_i/d$ y $m\ge3\,d\,\eps^{-2}\log(2d/p)$, entonces $S$ es un encaje con distorsión $\eps$ para $A$ con probabilidad $\ge1-p$.
+  \item Si $p_i=1/n$ y $m\ge3\,\mu(A)\,d\,\eps^{-2}\log(2d/p)$, la misma conclusión.
+\end{enumerate}
+\end{teorema}
+
+\begin{proof}
+Sea $u_i=U\T e_i\in\R^d$ (fila $i$ de $U$). Entonces $U\T S\T SU=\sum_{k=1}^mX_k$ con
+$X_k=\frac{1}{m\,p_{i_k}}u_{i_k}u_{i_k}\T$ independientes y semidefinidas positivas, y
+$\E X_k=\frac1m\sum_iu_iu_i\T=\frac1mI_d$, de modo que $\E\sum_kX_k=I_d$. Además
+$\lambda_{\max}(X_k)=\ell_{i_k}/(m\,p_{i_k})\le R$, con $R=d/m$ en el caso (a) y $R=\mu(A)d/m$ en el caso (b). La
+desigualdad de Chernoff matricial (teorema~\ref{teo:chernoff-mat}) con $\mu_{\min}=\mu_{\max}=1$ da
+$\Prob(\nrm{\sum_kX_k-I}_2>\eps)\le2d\exp(-\eps^2/(3R))$, que es $\le p$ bajo las hipótesis.
+\end{proof}
+
+El factor $\log d$ es aquí inevitable (problema del coleccionista de cupones: hay que «ver» las $d$
+direcciones). El teorema también explica la SRHT: por \eqref{eq:srht-aplana}, tras la mezcla $HD$ la
+coherencia es $\mu(HDA)\le\bigl(1+\sqrt{8\log(n/p)/d}\bigr)^2$, y el apartado (b) da el tamaño de la tabla~\ref{tab:sketches}.
+
+\section{Teoremas principales para \emph{sketches} rápidos}
+
+\begin{teorema}[SRHT {\cite{Tropp11,BG13}}]\label{teo:srht}
+Sea $S$ una SRHT y $\eps,p\in(0,1)$. Si
+\[ m\;\gtrsim\;\frac{1}{\eps^2}\Bigl(\sqrt d+\sqrt{8\log(n/p)}\Bigr)^{2}\log(d/p), \]
+entonces $S$ es un encaje con distorsión $\eps$ para cada $A\in\R^{n\times d}$ fija con probabilidad $\ge1-p$.
+\end{teorema}
+
+\begin{teorema}[CountSketch {\cite{CW13,NN13,MM13}}]\label{teo:count}
+Sea $S$ un CountSketch y $\eps,p\in(0,1)$. Si $m\ge2d^2/(\eps^2p)$, entonces $S$ es un encaje con distorsión
+$\eps$ para cada $A\in\R^{n\times d}$ fija con probabilidad $\ge1-p$.
+\end{teorema}
+
+\begin{proof}
+Método del segundo momento. Con $u_i$ las filas de $U$,
+$(U\T S\T SU-I)_{ab}=\sum_{i\ne j}\sigma_i\sigma_j\mathbf 1\{h(i)=h(j)\}U_{ia}U_{jb}$. Al tomar la esperanza del
+cuadrado solo sobreviven los pares $\{i,j\}=\{i',j'\}$, cada uno con probabilidad de colisión $1/m$:
+\[ \E\nrm{U\T S\T SU-I}_F^2=\frac1m\sum_{i\ne j}\bigl(\ell_i\ell_j+(u_i\T u_j)^2\bigr)\le\frac1m\bigl(d^2+\nrm{UU\T}_F^2\bigr)=\frac{d^2+d}{m}\le\frac{2d^2}{m}. \]
+Por Markov, $\Prob(\nrm{U\T S\T SU-I}_2>\eps)\le\Prob(\nrm{\cdot}_F^2>\eps^2)\le2d^2/(m\eps^2)\le p$.
+\end{proof}
+
+La demostración solo usa independencia de a pares en $h$ y de a cuatro en los signos. La dependencia $d^2$ no
+es un defecto del análisis: para $s=1$ no nulo por columna hacen falta $m=\Omega(d^2)$ filas (Nelson y Nguyên).
+
+\begin{teorema}[OSNAP {\cite{NN13,Cohen16}}]\label{teo:osnap}
+Una SJLT con $m\gtrsim d\log(d/p)/\eps^2$ filas y $s\gtrsim\log(d/p)/\eps$ no nulos por columna es un encaje de
+subespacio con distorsión $\eps$ para cada $A\in\R^{n\times d}$ fija con probabilidad $\ge1-p$.
+\end{teorema}
+
+\section{Encajes regularizados y dimensión efectiva}\label{sec:dim-efectiva}
+
+En muchos problemas el hessiano es $A\T A+\mu I$ (regresión \emph{ridge}) o, más en general,
+$B\T B+\nabla^2 g$ con $\nabla^2 g\succeq\mu I$. Solo se aplica el \emph{sketch} a $B$, y lo que se necesita es
+\begin{equation}\label{eq:embed-reg}
+  (1-\eps)\,(A\T A+\mu I)\;\preceq\;A\T S\T SA+\mu I\;\preceq\;(1+\eps)\,(A\T A+\mu I).
+\end{equation}
+Esto es \emph{más débil} que \eqref{eq:embed}: en las direcciones donde $A\T A\ll\mu I$, el término $\mu I$ ya
+domina y da igual lo que haga el \emph{sketch}.
+
+\begin{definicion}[Dimensión efectiva]\label{def:dim-efectiva}
+La \textbf{dimensión efectiva} de $A$ con regularización $\mu>0$ es
+\[ \dmu=\tr\bigl(A\T A\,(A\T A+\mu I)^{-1}\bigr)=\sum_{j=1}^d\frac{\sigma_j^2}{\sigma_j^2+\mu}, \]
+con $\sigma_1\ge\dots\ge\sigma_d$ los valores singulares de $A$.
+\end{definicion}
+
+Cada valor singular aporta un número entre $0$ y $1$: casi $1$ si $\sigma_j^2\gg\mu$, casi $0$ si
+$\sigma_j^2\ll\mu$. Así, $\dmu$ \emph{cuenta las direcciones en las que los datos pesan más que la
+regularización}. Siempre $\dmu\le\rank(A)\le d$ y $\dmu\le\nrm{A}_F^2/\mu$.
+
+\begin{ejemplo}
+Si $\sigma_j^2=C\,j^{-2\beta}$ con $\beta>\tfrac12$, entonces $\dmu\asymp(C/\mu)^{1/(2\beta)}$, que puede ser
+mucho menor que $d$ e incluso no depender de $d$. En el experimento de la sección~\ref{sec:exp-ans},
+$d=256$ y $\dmu\approx26$.
+\end{ejemplo}
+
+\begin{proposicion}[Por qué manda la dimensión efectiva]\label{prop:embed-reg}
+Sea $H=A\T A+\mu I$ y $Z=AH^{-1/2}\in\R^{n\times d}$. Entonces \eqref{eq:embed-reg} equivale a
+\[ \nrm{Z\T(S\T S-I_n)Z}_2\le\eps,\qquad\text{y}\qquad\nrm{Z}_2^2=\frac{\sigma_1^2}{\sigma_1^2+\mu}\le1,\qquad\nrm{Z}_F^2=\dmu . \]
+\end{proposicion}
+
+\begin{proof}
+Multiplicando \eqref{eq:embed-reg} a ambos lados por $H^{-1/2}$ se obtiene
+$-\eps I\preceq H^{-1/2}(A\T S\T SA-A\T A)H^{-1/2}\preceq\eps I$, y el término central es $Z\T(S\T S-I)Z$. Las dos
+normas se leen en la descomposición en valores singulares de $A$.
+\end{proof}
+
+La matriz $Z$ tiene norma espectral a lo sumo $1$ y norma de Frobenius al cuadrado $\dmu$: su \emph{rango
+estable} es del orden de $\dmu$. Los resultados de producto matricial aproximado en términos del rango
+estable (Cohen, Nelson y Woodruff, 2016) y de regresión regularizada (Avron, Clarkson y Woodruff, 2017)
+muestran que entonces \textbf{basta un \emph{sketch} de tamaño proporcional a $\dmu$ en lugar de $d$}:
+$m\asymp\dmu\log\dmu/\eps^2$ para la SRHT y $m\asymp\dmu^2/\eps^2$ para CountSketch (el enunciado preciso
+que usa Newton Sketch adaptativo es el lema~\ref{lem:lwp1}). El mismo cálculo con muestreo lleva a las
+\emph{puntuaciones de palanca regularizadas} $\ell_i^{\mu}=a_i\T(A\T A+\mu I)^{-1}a_i$, cuya suma es $\dmu$.
+
+
+
+\begin{resumen}
+\begin{itemize}
+  \item Encaje de subespacio: $\nrm{SAx}^2\in(1\pm\eps)\nrm{Ax}^2$ para todo $x$; equivale a $(1-\eps)A\T A\preceq A\T S\T SA\preceq(1+\eps)A\T A$.
+  \item Demostración tipo: concentración para un vector $+$ $\eps$-red $\Rightarrow$ $m\asymp d/\eps^2$ (gaussiano).
+  \item Muestreo: Chernoff matricial; el tamaño lo fija $\max_i\ell_i/p_i$. La SRHT uniformiza las palancas.
+  \item CountSketch: segundo momento; $m\asymp d^2/\eps^2$ por colisiones.
+  \item Con regularización $\mu$, el tamaño necesario lo fija la dimensión efectiva $\dmu=\sum_j\sigma_j^2/(\sigma_j^2+\mu)\le d$.
+\end{itemize}
+\end{resumen}
+
+\chapter{Aplicación a mínimos cuadrados}\label{cap:ls}
+
+El problema de mínimos cuadrados sobredeterminado,
+\begin{equation}\label{eq:ls}
+  x^\star=\argmin_{x\in\R^d}\;\tfrac12\nrm{Ax-b}_2^2,\qquad A\in\R^{n\times d},\ n\gg d,
+\end{equation}
+es el laboratorio natural del \emph{sketching}: es el caso cuadrático de \eqref{eq:problema-general}, con hessiano
+constante $A\T A$. Las tres estrategias que aparecen aquí (\emph{resolver el problema comprimido},
+\emph{precondicionar} e \emph{iterar con el hessiano comprimido}) reaparecen después en optimización general, y
+la tercera \emph{es} Newton Sketch.
+
+\section{Métodos clásicos y su coste}
+
+\begin{itemize}
+  \item \textbf{Directos} (QR de Householder, SVD): $\cO(nd^2)$ operaciones, numéricamente estables.
+  \item \textbf{Ecuaciones normales} $A\T Ax=A\T b$ con Cholesky: $\cO(nd^2)$, pero el número de condición es
+        $\kappa(A)^2$ y se pierde el doble de cifras significativas.
+  \item \textbf{Iterativos} (gradiente conjugado sobre las ecuaciones normales, LSQR): $\cO(nd)$ por iteración y del
+        orden de $\kappa(A)\log(1/\delta)$ iteraciones.
+\end{itemize}
+Los directos pagan $nd^2$; los iterativos pagan $\kappa(A)$. El \emph{sketching} permite no pagar ninguno de los dos.
+
+\section{Primera estrategia: \emph{sketch-and-solve}}
+
+Se resuelve el problema comprimido:
+\begin{equation}\label{eq:sas}
+  \tilde x=\argmin_{x\in\R^d}\;\tfrac12\nrm{S(Ax-b)}_2^2 .
+\end{equation}
+Coste: el de formar $SA$ y $Sb$ más $\cO(md^2)$.
+
+\begin{teorema}[Garantía de \emph{sketch-and-solve}]\label{teo:sas}
+Si $S$ es un encaje de subespacio con distorsión $\eps$ para la matriz ampliada $[A\ \ b]\in\R^{n\times(d+1)}$, entonces
+\[ \nrm{A\tilde x-b}_2^2\;\le\;\frac{1+\eps}{1-\eps}\,\nrm{Ax^\star-b}_2^2 . \]
+\end{teorema}
+
+\begin{proof}
+Para todo $x$, el vector $Ax-b$ está en $\col([A\ b])$. Entonces
+\[ \nrm{A\tilde x-b}_2^2\le\frac{1}{1-\eps}\nrm{S(A\tilde x-b)}_2^2\le\frac{1}{1-\eps}\nrm{S(Ax^\star-b)}_2^2\le\frac{1+\eps}{1-\eps}\nrm{Ax^\star-b}_2^2, \]
+donde la desigualdad central usa que $\tilde x$ minimiza el problema comprimido.
+\end{proof}
+
+Este argumento exige $m\asymp d/\eps^2$. Un análisis más fino (Sarlós; Drineas, Mahoney, Muthukrishnan y
+Sarlós) muestra que para el \emph{residuo} basta $m\asymp d/\eps$. En el caso gaussiano el cálculo es exacto:
+
+\begin{proposicion}[Exceso de residuo con \emph{sketch} gaussiano]\label{prop:sas-gauss}
+Si $S$ es gaussiana con $m>d+1$ y $A$ tiene rango $d$,
+\[ \E\,\nrm{A\tilde x-b}_2^2=\Bigl(1+\frac{d}{m-d-1}\Bigr)\nrm{Ax^\star-b}_2^2 . \]
+\end{proposicion}
+
+\begin{proof}
+Sea $r^\star=b-Ax^\star\perp\col(A)$ y $A=UT$ con $U$ ortonormal. Las ecuaciones normales del problema
+comprimido dan $A(\tilde x-x^\star)=U(U\T S\T SU)^{-1}U\T S\T Sr^\star$. Por invariancia rotacional, $G_1=SU$ y
+$g=Sr^\star/\nrm{r^\star}$ son gaussianos independientes con entradas de varianza $1/m$. Condicionando en $G_1$,
+$\E\nrm{(G_1\T G_1)^{-1}G_1\T g}_2^2=\frac1m\tr\bigl((G_1\T G_1)^{-1}\bigr)$, y como $G_1\T G_1$ es una matriz de Wishart
+con $\E[(G_1\T G_1)^{-1}]=\frac{m}{m-d-1}I_d$, resulta $\E\nrm{A(\tilde x-x^\star)}_2^2=\frac{d}{m-d-1}\nrm{r^\star}_2^2$.
+Por Pitágoras, $\nrm{A\tilde x-b}^2=\nrm{r^\star}^2+\nrm{A(\tilde x-x^\star)}^2$.
+\end{proof}
+
+\begin{cuidado}[El límite de \emph{sketch-and-solve}]
+El error relativo en el residuo es $\approx d/m$. Para tres cifras ($10^{-3}$) haría falta $m\approx1000\,d$;
+para diez cifras, $m\approx10^{10}d\gg n$. \emph{Sketch-and-solve} solo da soluciones de baja precisión. Para alta
+precisión hay que \emph{iterar}, usando el \emph{sketch} solo para acelerar cada iteración.
+\end{cuidado}
+
+\section{Segunda estrategia: \emph{sketch-and-precondition}}
+
+Idea (Rokhlin y Tygert; Blendenpik; LSRN): usar $SA$ no para resolver, sino para construir un
+precondicionador. Se calcula la factorización $SA=QR$ ($R\in\R^{d\times d}$) y se resuelve con LSQR el
+problema equivalente $\min_y\nrm{(AR^{-1})y-b}_2$, $x=R^{-1}y$.
+
+\begin{teorema}[Calidad del precondicionador]\label{teo:precond}
+Si $S$ es un encaje de subespacio con distorsión $\eps$ para $A$ y $SA=QR$, entonces
+\[ \kappa(AR^{-1})\;\le\;\sqrt{\frac{1+\eps}{1-\eps}} . \]
+\end{teorema}
+
+\begin{proof}
+Para $y\in\R^d$, $\nrm{SAR^{-1}y}_2=\nrm{Qy}_2=\nrm{y}_2$. Por \eqref{eq:embed} aplicada a $x=R^{-1}y$,
+$\frac{1}{1+\eps}\nrm{y}_2^2\le\nrm{AR^{-1}y}_2^2\le\frac{1}{1-\eps}\nrm{y}_2^2$.
+\end{proof}
+
+De hecho los valores singulares de $AR^{-1}$ son exactamente los inversos de los de $SU$; para un \emph{sketch}
+gaussiano, por \eqref{eq:gauss-sv}, $\kappa(AR^{-1})\approx\frac{1+\sqrt{d/m}}{1-\sqrt{d/m}}$: con $m=4d$ es $3$, \textbf{sea
+cual sea $\kappa(A)$}. LSQR reduce el error en un factor $\frac{\kappa-1}{\kappa+1}\approx\sqrt{d/m}$ por iteración,
+así que bastan $\cO(\log(1/\delta))$ iteraciones. Coste total con SRHT y $m\asymp d$:
+\[ \underbrace{\cO(nd\log d)}_{\text{sketch}}+\underbrace{\cO(d^3)}_{\text{QR de }SA}+\underbrace{\cO(nd\log(1/\delta))}_{\text{LSQR}}, \]
+frente a $\cO(nd^2)$ de un método directo. Aquí basta una distorsión \emph{constante} (por ejemplo
+$\eps=\tfrac12$): la precisión final la da la iteración, no el \emph{sketch}.
+
+\section{Tercera estrategia: \emph{sketch} iterativo del hessiano (IHS)}\label{sec:ihs}
+
+Pilanci y Wainwright (2016) observaron que el defecto de \emph{sketch-and-solve} es comprimir también $b$. Si
+se escribe el paso de Newton exacto para \eqref{eq:ls} desde $x_t$,
+\[ x_{t+1}=\argmin_x\Bigl\{\tfrac12\nrm{A(x-x_t)}_2^2-\ip{A\T(b-Ax_t)}{x-x_t}\Bigr\}, \]
+y se aplica el \emph{sketch} \textbf{solo al término cuadrático} (el hessiano), manteniendo el gradiente exacto, se obtiene
+\begin{equation}\label{eq:ihs}
+  x_{t+1}=\argmin_x\Bigl\{\tfrac12\nrm{S_tA(x-x_t)}_2^2-\ip{A\T(b-Ax_t)}{x-x_t}\Bigr\}
+  =x_t+(A\T S_t\T S_tA)^{-1}A\T(b-Ax_t).
+\end{equation}
+
+\begin{teorema}[Convergencia lineal del IHS]\label{teo:ihs}
+Si $S_t$ es un encaje de subespacio con distorsión $\eps<\tfrac12$ para $A$, entonces
+\[ \nrm{A(x_{t+1}-x^\star)}_2\;\le\;\frac{\eps}{1-\eps}\,\nrm{A(x_t-x^\star)}_2 . \]
+\end{teorema}
+
+\begin{proof}
+Como $A\T(b-Ax_t)=-A\T A(x_t-x^\star)$, \eqref{eq:ihs} da
+\[ x_{t+1}-x^\star=\bigl(I-(A\T S_t\T S_tA)^{-1}A\T A\bigr)(x_t-x^\star). \]
+Con $A=UT$ y $W=U\T S_t\T S_tU$, y llamando $e_t=T(x_t-x^\star)$ (de modo que $\nrm{e_t}_2=\nrm{A(x_t-x^\star)}_2$), queda
+$e_{t+1}=(I-W^{-1})e_t$. Los valores propios de $W$ están en $[1-\eps,1+\eps]$, luego los de $I-W^{-1}$ están en
+$[-\frac{\eps}{1-\eps},\frac{\eps}{1+\eps}]$.
+\end{proof}
+
+\begin{ideaclave}[Por qué el IHS llega a cualquier precisión y \emph{sketch-and-solve} no]
+El punto fijo de \eqref{eq:ihs} es $A\T(b-Ax)=0$: la solución \emph{exacta}. El \emph{sketch} solo afecta a la
+\emph{velocidad} (el factor $\frac{\eps}{1-\eps}$), no al límite. Con $\eps$ constante se ganan cifras a ritmo
+geométrico: $\cO(\log(1/\delta))$ iteraciones, cada una con un \emph{sketch} de tamaño $m\asymp d$.
+\textbf{Newton Sketch es exactamente esta idea aplicada a un hessiano que cambia con $x$.}
+\end{ideaclave}
+
+\begin{observacion}[Tasa exacta en el caso gaussiano]\label{obs:ihs-exacta}
+Con \emph{sketches} gaussianos independientes en cada iteración, $W$ es de Wishart y se puede calcular
+$\E\nrm{e_{t+1}}_2^2=\rho^2\nrm{e_t}_2^2$ con
+\[ \rho^2=1-2\theta_1+\theta_2,\qquad\theta_1=\frac{m}{m-d-1},\quad\theta_2=\frac{m^2(m-1)}{(m-d)(m-d-1)(m-d-3)}, \]
+usando $\E[W^{-1}]=\theta_1I$ y $\E[W^{-2}]=\theta_2I$. Para $m\gg d$, $\rho^2\approx d/m$: la tasa es
+$\approx\sqrt{d/m}$ (un cálculo de Monte Carlo con $d=50$ confirma la fórmula con tres cifras). Con paso unitario
+y $m=4d$ resulta $\rho\approx0.86$, bastante lento; por eso en la práctica se toma $m$ algo mayor o se añade un
+tamaño de paso (Lacotte y Pilanci, 2020).
+\end{observacion}
+
+\section{Regresión \emph{ridge} y dimensión efectiva}
+
+Para $\min_x\tfrac12\nrm{Ax-b}_2^2+\tfrac\mu2\nrm{x}_2^2$ el hessiano es $A\T A+\mu I$ y el IHS se convierte en
+$x_{t+1}=x_t-(A\T S_t\T S_tA+\mu I)^{-1}\bigl(A\T(Ax_t-b)+\mu x_t\bigr)$. El mismo argumento del
+teorema~\ref{teo:ihs}, ahora con la condición \eqref{eq:embed-reg}, da convergencia lineal; y por la
+sección~\ref{sec:dim-efectiva} basta $m\asymp\dmu$ en lugar de $m\asymp d$. Lacotte y Pilanci (2020) propusieron
+además un esquema \emph{adaptativo} que no necesita conocer $\dmu$: empieza con $m$ pequeño y lo duplica cuando la
+convergencia observada es más lenta que la prevista. Es el antecedente directo del capítulo~\ref{cap:ans}.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}
+\begin{semilogyaxis}[width=10.5cm,height=6.2cm,xlabel={iteración $t$},
+  ylabel={$\nrm{A(x_t-x^\star)}_2/\nrm{Ax^\star}_2$},grid=both,grid style={gray!20},
+  legend pos=south west,legend style={font=\footnotesize},tick label style={font=\footnotesize},label style={font=\small}]
+\addplot[color=blue!70!black, mark=o, thick] coordinates {(0,1) (1,0.9199) (2,0.6019) (3,0.362) (4,0.2731) (5,0.1828) (6,0.1737) (7,0.1385) (8,0.116) (9,0.0995) (10,0.1092) (11,0.07914) (12,0.05888)};
+\addlegendentry{$m=4d$}
+\addplot[color=red!70!black, mark=square, thick] coordinates {(0,1) (1,0.2881) (2,0.1327) (3,0.04513) (4,0.02175) (5,0.009641) (6,0.004289) (7,0.002165) (8,0.0008951) (9,0.000397) (10,0.0001553) (11,5.724e-05) (12,2.536e-05)};
+\addlegendentry{$m=8d$}
+\addplot[color=green!50!black, mark=triangle, thick] coordinates {(0,1) (1,0.2428) (2,0.06341) (3,0.01902) (4,0.004835) (5,0.00154) (6,0.0005298) (7,0.0001405) (8,4.947e-05) (9,1.155e-05) (10,4.15e-06) (11,1.135e-06) (12,2.866e-07)};
+\addlegendentry{$m=16d$}
+\end{semilogyaxis}
+\end{tikzpicture}
+\caption{IHS con \emph{sketch} gaussiano renovado en cada iteración y paso unitario ($n=8192$, $d=50$, $\kappa(A)=10^6$).}
+\label{fig:ihs}
+\end{figure}
+
+En la figura~\ref{fig:ihs} la convergencia es lineal y \emph{no depende de} $\kappa(A)=10^6$. Las tasas empíricas
+(media geométrica entre las iteraciones 2 y 8) son $0.76$, $0.44$ y $0.30$ para $m=4d$, $8d$ y $16d$; la
+observación~\ref{obs:ihs-exacta} predice $0.86$, $0.46$ y $0.29$ en media cuadrática.
+
+\begin{resumen}
+\begin{itemize}
+  \item \emph{Sketch-and-solve}: una sola resolución pequeña; error relativo $\approx d/m$; solo baja precisión.
+  \item \emph{Sketch-and-precondition}: $\kappa(AR^{-1})=\cO(1)$ con $m\asymp d$; alta precisión en $\cO(\log(1/\delta))$ iteraciones.
+  \item IHS: \emph{sketch} del hessiano y gradiente exacto; convergencia lineal con factor $\eps/(1-\eps)$; es Newton Sketch para una cuadrática.
+  \item Con regularización, el tamaño lo fija $\dmu$.
+\end{itemize}
+\end{resumen}
+
+\chapter{Aplicación a sistemas lineales y a programas lineales}\label{cap:lin}
+
+«Problemas lineales» puede significar dos cosas, y el \emph{sketching} interviene en ambas: \emph{sistemas de
+ecuaciones lineales} $Ax=b$, donde el \emph{sketch} da lugar a métodos iterativos aleatorizados
+(\emph{sketch-and-project}), y \emph{programas lineales}, donde el \emph{sketch} acelera el paso de Newton del
+método de barrera.
+
+\section{Sistemas lineales: \emph{sketch-and-project}}
+
+Sea $Ax=b$ un sistema \emph{consistente} con $A\in\R^{n\times d}$ de rango $d$ y solución $x^\star$. La idea de
+Gower y Richtárik (2015) es no resolver el sistema entero, sino una versión comprimida distinta en cada
+iteración, y proyectar sobre ella.
+
+\begin{definicion}[Iteración \emph{sketch-and-project}]\label{def:sap}
+Sea $\mathsf B\succ0$ una matriz $d\times d$ (define la norma $\nrm{x}_{\mathsf B}^2=x\T\mathsf Bx$) y $\mathcal D$ una
+distribución sobre matrices $S\in\R^{n\times q}$. En cada iteración se extrae $S\sim\mathcal D$ y
+\begin{equation}\label{eq:sap}
+  x_{k+1}=\argmin_{x}\;\nrm{x-x_k}_{\mathsf B}^2\quad\text{s.a.}\quad S\T Ax=S\T b .
+\end{equation}
+\end{definicion}
+
+Aquí el \emph{sketch} actúa sobre las \emph{ecuaciones}: $S\T A\in\R^{q\times d}$ son $q$ combinaciones lineales de
+las $n$ ecuaciones, con $q$ muy pequeño (a menudo $q=1$). La solución de \eqref{eq:sap} es explícita:
+\begin{equation}\label{eq:sap-explicita}
+  x_{k+1}=x_k-\mathsf B^{-1}A\T S\,(S\T A\mathsf B^{-1}A\T S)^{\dagger}\,S\T(Ax_k-b).
+\end{equation}
+
+\begin{teorema}[Convergencia lineal en media {\cite{GR15}}]\label{teo:sap}
+Sea $Z=A\T S(S\T A\mathsf B^{-1}A\T S)^{\dagger}S\T A$ y supóngase $\E[Z]\succ0$. Entonces
+\[ \E\nrm{x_k-x^\star}_{\mathsf B}^2\;\le\;\rho^{\,k}\,\nrm{x_0-x^\star}_{\mathsf B}^2,\qquad
+   \rho=1-\lambda_{\min}\bigl(\mathsf B^{-1/2}\,\E[Z]\,\mathsf B^{-1/2}\bigr)<1 . \]
+\end{teorema}
+
+\begin{proof}
+Como $Ax^\star=b$, \eqref{eq:sap-explicita} da $x_{k+1}-x^\star=(I-\mathsf B^{-1}Z)(x_k-x^\star)$. Sea
+$e_k=\mathsf B^{1/2}(x_k-x^\star)$ y $\Pi=\mathsf B^{-1/2}Z\mathsf B^{-1/2}$; entonces $e_{k+1}=(I-\Pi)e_k$. La matriz $\Pi$ es
+el proyector ortogonal sobre la imagen de $\mathsf B^{-1/2}A\T S$ (es de la forma $C(C\T C)^{\dagger}C\T$), así que
+$\nrm{e_{k+1}}_2^2=\nrm{e_k}_2^2-e_k\T\Pi e_k$. Tomando esperanza condicionada a $x_k$,
+$\E[e_k\T\Pi e_k]=e_k\T\E[\Pi]e_k\ge\lambda_{\min}(\E[\Pi])\nrm{e_k}_2^2$.
+\end{proof}
+
+La estructura es transparente: cada iteración \emph{proyecta ortogonalmente} el error sobre un subespacio
+aleatorio; ninguna proyección aislada lo anula, pero \emph{en media} todas las direcciones se contraen.
+
+\subsection{Casos particulares clásicos}
+
+\begin{ejemplo}[Kaczmarz aleatorizado]\label{ej:kaczmarz}
+Con $\mathsf B=I$ y $S=e_i$ (una ecuación al azar), \eqref{eq:sap-explicita} es
+\[ x_{k+1}=x_k-\frac{a_i\T x_k-b_i}{\nrm{a_i}_2^2}\,a_i : \]
+la proyección de $x_k$ sobre el hiperplano de la ecuación $i$. Si $i$ se elige con probabilidad
+$p_i=\nrm{a_i}_2^2/\nrm{A}_F^2$, entonces $\E[Z]=\sum_ip_i\,a_ia_i\T/\nrm{a_i}_2^2=A\T A/\nrm{A}_F^2$ y
+\[ \rho=1-\frac{\sigma_{\min}(A)^2}{\nrm{A}_F^2}, \]
+que es el teorema de Strohmer y Vershynin (2009). Cada iteración cuesta $\cO(d)$.
+\end{ejemplo}
+
+\begin{ejemplo}[Descenso por coordenadas]\label{ej:cd}
+Si $A$ es simétrica definida positiva ($n=d$), $\mathsf B=A$ y $S=e_i$ con $p_i=A_{ii}/\tr(A)$, se obtiene el descenso
+por coordenadas aleatorizado, con $\rho=1-\lambda_{\min}(A)/\tr(A)$ (Leventhal y Lewis, 2010).
+\end{ejemplo}
+
+\begin{ejemplo}[Versiones por bloques y gaussianas]
+Con $S$ formada por $q$ columnas de la identidad se obtienen Kaczmarz y descenso por coordenadas por bloques;
+con $S$ gaussiana, variantes con direcciones aleatorias densas. Aumentar $q$ mejora $\rho$ a cambio de resolver
+un sistema $q\times q$ en cada iteración.
+\end{ejemplo}
+
+\begin{cuidado}[Dos usos distintos del \emph{sketch} para sistemas lineales]
+\begin{itemize}
+  \item \textbf{\emph{Sketch-and-project}}: muchos \emph{sketches} diminutos, uno por iteración. La tasa $\rho$
+        \emph{depende del condicionamiento} (en Kaczmarz, de $\nrm{A}_F^2/\sigma_{\min}^2$). Útil cuando solo se puede acceder a unas pocas filas cada vez.
+  \item \textbf{\emph{Sketch-and-precondition}} (capítulo~\ref{cap:ls}): un \emph{sketch} grande ($m\asymp d$) que
+        elimina la dependencia del condicionamiento. Es el que usa Newton Sketch.
+\end{itemize}
+\end{cuidado}
+
+\subsection{El sistema de Newton como problema de mínimos cuadrados}
+
+El sistema lineal que más nos interesa es el de Newton, $H v=-g$ con $H=B\T B$. No es un sistema cualquiera:
+es la ecuación normal del problema
+\[ \min_{v}\;\tfrac12\nrm{Bv}_2^2+\ip{g}{v} . \]
+Hay entonces dos formas de explotar el \emph{sketch} $SB$, que corresponden a las estrategias segunda y
+tercera del capítulo~\ref{cap:ls}:
+\begin{enumerate}
+  \item \textbf{Newton Sketch}: reemplazar $H$ por $H_S=(SB)\T(SB)$ y resolver $H_Sv=-g$ exactamente. El paso es
+        inexacto, pero el gradiente es exacto (como en el IHS).
+  \item \textbf{Newton con gradiente conjugado precondicionado}: resolver $Hv=-g$ con gradiente conjugado usando $H_S$
+        como precondicionador. Si $(1-\eps)H\preceq H_S\preceq(1+\eps)H$, entonces
+        $\kappa(H_S^{-1/2}HH_S^{-1/2})\le\frac{1+\eps}{1-\eps}$ y bastan unas pocas iteraciones, cada una con un producto
+        por $B$ y otro por $B\T$, de coste $\cO(nd)$.
+\end{enumerate}
+Ambas evitan formar $B\T B$.
+
+\section{Programas lineales}\label{sec:pl}
+
+Considérese el programa lineal en forma de desigualdades
+\begin{equation}\label{eq:pl}
+  \min_{x\in\R^d}\;c\T x\quad\text{s.a.}\quad Ax\le b,\qquad A\in\R^{n\times d},
+\end{equation}
+con muchas más restricciones que variables ($n\gg d$). El método de barrera (algoritmo~\ref{alg:barrera})
+minimiza, para $\theta$ creciente,
+\[ F_\theta(x)=\theta\,c\T x-\sum_{i=1}^n\log(b_i-a_i\T x), \]
+que es autoconcordante estándar. Con holguras $s_i=b_i-a_i\T x>0$:
+\[ \nabla F_\theta(x)=\theta c+A\T(1/s),\qquad\nabla^2F_\theta(x)=A\T\diag(1/s_i^2)A=B\T B,\qquad B=\diag(1/s_i)\,A . \]
+Cada paso de Newton cuesta $\cO(nd^2)$. Con Newton Sketch se forma $SB$ ---con SRHT, en $\cO(nd\log m)$--- y
+el paso cuesta $\cO(nd\log m+md^2)$; con $m\asymp d$, $\cO(nd\log d+d^3)$. Lo mismo vale para programas
+cuadráticos convexos, añadiendo $\theta Q$ al hessiano sin aplicarle \emph{sketch}.
+
+\begin{cuidado}[La barrera se vuelve coherente cerca del óptimo]
+En un vértice óptimo no degenerado hay $d$ restricciones activas; a lo largo de la trayectoria central sus
+holguras tienden a $0$ y las filas correspondientes de $B=\diag(1/s)A$ crecen sin límite: \emph{$d$ filas
+concentran casi toda la palanca}. Es exactamente la «matriz coherente» del experimento de la
+sección~\ref{sec:exp-embed}. Consecuencias:
+\begin{itemize}
+  \item el muestreo uniforme de restricciones fracasa al final del método de barrera;
+  \item los \emph{sketches} ajenos a los datos que mezclan (gaussiano, SRHT) siguen funcionando con $m\asymp d$;
+  \item CountSketch necesita $m\asymp d^2$ para no mezclar dos restricciones activas en la misma cubeta.
+\end{itemize}
+\end{cuidado}
+
+\begin{resumen}
+\begin{itemize}
+  \item \emph{Sketch-and-project}: proyectar sobre una versión comprimida aleatoria del sistema; convergencia
+        lineal en media con $\rho=1-\lambda_{\min}(\mathsf B^{-1/2}\E[Z]\mathsf B^{-1/2})$. Kaczmarz y descenso por coordenadas son casos particulares.
+  \item El sistema de Newton es un problema de mínimos cuadrados con matriz $B$; se le aplica todo el capítulo~\ref{cap:ls}.
+  \item En programación lineal con barrera, $B=\diag(1/s)A$; Newton Sketch reduce el coste por paso de $nd^2$ a $nd\log d+d^3$.
+  \item Cerca del óptimo $B$ es coherente: hacen falta \emph{sketches} que mezclen.
+\end{itemize}
+\end{resumen}
+
+\part{Newton Sketch}
+\chapter{Newton Sketch}\label{cap:ns}
+
+Este capítulo presenta el algoritmo de Pilanci y Wainwright~\cite{PW17}: el método de Newton en el que el
+hessiano se sustituye por una versión comprimida aleatoriamente. Es la confluencia de los capítulos
+anteriores: el encaje de subespacio (capítulo~\ref{cap:embed}) controla el error del hessiano y la
+autoconcordancia (capítulo~\ref{cap:sc}) convierte ese control en una garantía de convergencia sin constantes
+del problema.
+
+\section{Derivación}
+
+Sea $f$ convexa y dos veces diferenciable con raíz del hessiano $B(x)=\nabla^2 f(x)^{1/2}\in\R^{n\times d}$
+(sección~\ref{sec:raiz-hess}), y $\cC\subseteq\R^d$ un conjunto convexo cerrado. El paso de Newton (proyectado) es
+un problema de mínimos cuadrados con término lineal:
+\[ x_{t+1}^{\mathrm{Newton}}=\argmin_{x\in\cC}\Bigl\{\tfrac12\nrm{B(x_t)(x-x_t)}_2^2+\ip{\nabla f(x_t)}{x-x_t}\Bigr\}. \]
+
+\begin{definicion}[Paso de Newton Sketch]\label{def:ns}
+Dada una matriz de \emph{sketch} $S_t\in\R^{m\times n}$, \emph{independiente en cada iteración},
+\begin{equation}\label{eq:ns}
+  x_{t+1}=\argmin_{x\in\cC}\Bigl\{\tfrac12\nrm{S_tB(x_t)(x-x_t)}_2^2+\ip{\nabla f(x_t)}{x-x_t}\Bigr\}.
+\end{equation}
+En el caso sin restricciones ($\cC=\R^d$):
+\begin{equation}\label{eq:ns-unc}
+  x_{t+1}=x_t+s\,\vnsk,\qquad\vnsk=-H_S(x_t)^{-1}\nabla f(x_t),\qquad H_S(x)=B(x)\T S\T SB(x),
+\end{equation}
+con paso $s=1$ o elegido por búsqueda lineal.
+\end{definicion}
+
+Tres observaciones de diseño:
+\begin{enumerate}
+  \item \textbf{Solo se comprime el hessiano; el gradiente es exacto.} Como en el IHS (sección~\ref{sec:ihs}), el
+        punto fijo es $\nabla f(x)=0$: el método converge a la solución \emph{exacta}. Comprimir los datos una vez y
+        optimizar sobre los datos comprimidos daría un método sesgado.
+  \item \textbf{No se forma $B\T B$.} Se forma $S_tB\in\R^{m\times d}$ y luego $(S_tB)\T(S_tB)$, de coste $\cO(md^2)$.
+  \item \textbf{\emph{Sketch} nuevo en cada iteración.} Así $S_t$ es independiente de $x_t$ y se puede aplicar la
+        garantía de encaje a la matriz fija $B(x_t)$; además los errores no se acumulan de forma coherente.
+\end{enumerate}
+
+\begin{definicion}[Decremento de Newton aproximado]
+\[ \lamt(x)=\bigl(\nabla f(x)\T H_S(x)^{-1}\nabla f(x)\bigr)^{1/2}=\bigl(-\ip{\nabla f(x)}{\vnsk}\bigr)^{1/2}. \]
+\end{definicion}
+
+Es calculable sin coste adicional (es un producto escalar con el paso ya calculado) y sustituye a $\lamf$
+tanto en la condición de Armijo como en el criterio de parada.
+
+\begin{algorithm}[ht]
+\caption{Newton Sketch con búsqueda lineal (sin restricciones)}\label{alg:ns}
+\begin{algorithmic}[1]
+\Require $x_0\in\dom f$, tamaño $m$, parámetros $(a,b)$, tolerancia $\delta$
+\For{$t=0,1,2,\dots$}
+  \State Generar $S_t\in\R^{m\times n}$ independiente; formar $S_tB(x_t)$ y $H_S=(S_tB)\T(S_tB)$
+  \State $\vnsk\gets-H_S^{-1}\nabla f(x_t)$;\quad$\lamt^2\gets-\ip{\nabla f(x_t)}{\vnsk}$
+  \State \textbf{si} $\lamt^2/2\le\delta$ \textbf{entonces devolver} $x_t$
+  \State $s\gets1$;\quad\textbf{mientras} $f(x_t+s\vnsk)>f(x_t)-a\,s\,\lamt^2$ \textbf{hacer} $s\gets b\,s$
+  \State $x_{t+1}\gets x_t+s\,\vnsk$
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+\section{El lema básico: direcciones y decrementos cercanos}
+
+\begin{lema}[Cercanía del paso con \emph{sketch}]\label{lem:ns-cerca}
+Sea $H=B\T B\succ0$ y supóngase que $S$ es un encaje de subespacio con distorsión $\eps\in(0,1)$ para $B$, es
+decir, $(1-\eps)H\preceq H_S\preceq(1+\eps)H$. Entonces, con $\vne=-H^{-1}g$ y $\vnsk=-H_S^{-1}g$:
+\begin{align}
+  \nrm{\vnsk-\vne}_x\;&\le\;\frac{\eps}{1-\eps}\,\nrm{\vne}_x=\frac{\eps}{1-\eps}\,\lamf(x), \label{eq:ns-dir}\\
+  \frac{\lamf(x)^2}{1+\eps}\;&\le\;\lamt(x)^2\;\le\;\frac{\lamf(x)^2}{1-\eps}, \label{eq:ns-dec}\\
+  \nrm{\vnsk}_x^2\;&\le\;\frac{\lamt(x)^2}{1-\eps}. \label{eq:ns-norma}
+\end{align}
+\end{lema}
+
+\begin{proof}
+Sea $B=UT$ con $U\in\R^{n\times d}$ de columnas ortonormales y $T$ invertible, $W=U\T S\T SU$ y $z=T^{-\top}g$.
+Entonces $H=T\T T$, $H_S=T\T WT$, y
+\[ B\vne=-UT(T\T T)^{-1}g=-Uz,\qquad B\vnsk=-UT(T\T WT)^{-1}g=-UW^{-1}z . \]
+Por tanto $\nrm{\vne}_x=\nrm{z}_2=\lamf(x)$, $\nrm{\vnsk-\vne}_x=\nrm{(W^{-1}-I)z}_2$, $\lamt(x)^2=z\T W^{-1}z$ y
+$\nrm{\vnsk}_x^2=z\T W^{-2}z$. Como los valores propios de $W$ están en $[1-\eps,1+\eps]$
+(proposición~\ref{prop:embed-equiv}), los de $W^{-1}-I$ están en $[-\frac{\eps}{1+\eps},\frac{\eps}{1-\eps}]$, los de
+$W^{-1}$ en $[\frac{1}{1+\eps},\frac{1}{1-\eps}]$, y $W^{-2}\preceq\frac{1}{1-\eps}W^{-1}$.
+\end{proof}
+
+\begin{ideaclave}
+En las coordenadas adecuadas, el paso exacto es $z$ y el paso con \emph{sketch} es $W^{-1}z$, con
+$W=U\T S\T SU\approx I$. \textbf{El error del paso es relativo}: proporcional al tamaño del propio paso, no a
+$\kappa$ ni a $n$. Un error relativo constante en la dirección de Newton degrada la convergencia cuadrática a
+lineal, pero conserva la propiedad esencial: una tasa que no depende del condicionamiento.
+\end{ideaclave}
+
+\section{Convergencia local para funciones fuertemente convexas y suaves}
+
+El primer resultado de~\cite{PW17} usa las hipótesis clásicas del capítulo~\ref{cap:opt}. Sean $\mu$ y $L$ los
+valores propios mínimo y máximo de $\nabla^2 f(x^\star)$ (restringidos al cono tangente $\cK$ de $\cC$ en $x^\star$
+si hay restricciones) y $\LH$ la constante de Lipschitz del hessiano.
+
+\begin{teorema}[Convergencia local lineal-cuadrática {\cite[Teorema~1]{PW17}}]\label{teo:pw1}
+Sea $\eps\in(0,1)$ y $\nrm{x_0-x^\star}_2\le\dfrac{\mu}{8\LH}$. Si el tamaño del \emph{sketch} (subgaussiano) cumple
+\[ m\;\ge\;\frac{c}{\eps^2}\,\max_{x\in\cC}\cW^2\bigl(B(x)\cK\bigr), \]
+entonces, con probabilidad al menos $1-c_1Ne^{-c_2m}$, las $N$ primeras iteraciones de \eqref{eq:ns} con paso
+unitario satisfacen
+\begin{equation}\label{eq:lin-cuad}
+  \nrm{x_{t+1}-x^\star}_2\;\le\;\eps\,\frac{L}{\mu}\,\nrm{x_t-x^\star}_2+\frac{4\LH}{\mu}\,\nrm{x_t-x^\star}_2^2 .
+\end{equation}
+Aquí $c,c_1,c_2$ son constantes universales y $\cW$ es el ancho gaussiano (véase abajo).
+\end{teorema}
+
+\paragraph{Lectura.} La recurrencia \eqref{eq:lin-cuad} es \emph{lineal-cuadrática}. El término cuadrático es
+el de Newton exacto. El término lineal, $\eps\kappa\nrm{x_t-x^\star}$, es el precio del \emph{sketch}. Lejos del
+óptimo domina el cuadrático y el método se comporta como Newton; cerca domina el lineal y la convergencia es
+geométrica con razón $\eps\kappa$. Bajo la condición inicial, $\frac{4\LH}{\mu}\nrm{x_t-x^\star}\le\frac12$, de modo
+que $\nrm{x_N-x^\star}\le\frac{\mu}{8\LH}(\frac12+\eps\kappa)^N$. Haciendo $\eps_t\to0$ (aumentando $m$ con $t$) se
+obtiene convergencia superlineal.
+
+\begin{cuidado}[Por qué este teorema no es la última palabra]
+La contracción exige $\eps\kappa<\tfrac12$, es decir $m\gtrsim\kappa^2d$: ¡reaparece el número de condición! No es
+un defecto del método sino del análisis en norma euclídea (el mismo defecto del
+teorema~\ref{teo:newton-clasico}). El lema~\ref{lem:ns-cerca} dice que en la norma local el error relativo es
+$\eps/(1-\eps)$ \emph{sin} $\kappa$. El análisis autoconcordante de la sección siguiente trabaja en esa norma.
+\end{cuidado}
+
+\paragraph{Ancho gaussiano y restricciones.} El ancho gaussiano de un conjunto $\mathcal L$ es
+\[ \cW(\mathcal L)=\E_g\,\sup_{z\in\mathcal L}\,\abs{\ip{g}{z}},\qquad g\sim N(0,I), \]
+y mide el «tamaño» de $\mathcal L$ visto por una proyección aleatoria. En el teorema se aplica a $B(x)\cK\cap\mathbb S^{n-1}$. Sin restricciones, $B\cK$ es un subespacio
+de dimensión $d$ y $\cW^2\le d$: se recupera $m\gtrsim d/\eps^2$. Con restricciones que inducen estructura (por
+ejemplo una bola $\ell_1$ con solución $k$-dispersa), el cono tangente es mucho más pequeño y
+$\cW^2\asymp k\log d$: basta un \emph{sketch} de tamaño proporcional a la \emph{dimensión intrínseca} del problema.
+Para la SRHT valen cotas análogas con factores logarítmicos adicionales.
+
+\section{Convergencia global para funciones autoconcordantes}
+
+Sea ahora $f$ autoconcordante estándar y estrictamente convexa, sin restricciones. Se fija $\eps$ y los
+parámetros de la búsqueda lineal de modo que, con $\varrho=\frac{1+\eps}{1-\eps}$, se cumpla
+$a<1-\tfrac12\varrho^2$, y se definen
+\begin{equation}\label{eq:eta-nu}
+  \eta=\frac18\cdot\frac{1-\frac12\varrho^2-a}{\varrho^{3}},\qquad\nu=a\,b\,\frac{\eta^2}{1+\varrho\,\eta}.
+\end{equation}
+
+\begin{lema}[Las dos fases {\cite[Lema~3]{PW17}}]\label{lem:pw-fases}
+Supóngase que en la iteración $t$ el \emph{sketch} satisface la cercanía \eqref{eq:ns-dir} con parámetro $\eps$.
+\begin{enumerate}[label=(\alph*)]
+  \item \textbf{Fase 1.} Si $\lamt(x_t)>\eta$, entonces $f(x_{t+1})-f(x_t)\le-\nu$.
+  \item \textbf{Fase 2.} Si $\lamt(x_t)\le\eta$, la búsqueda lineal acepta $s=1$ y
+        $\lamf(x_{t+1})\le\tfrac{16}{25}\,\lamf(x_t)$.
+\end{enumerate}
+\end{lema}
+
+\begin{proof}[Esquema]
+(a) Sea $\lambda=\lamt(x_t)$ y $c$ tal que $\nrm{\vnsk}_x\le c\lambda$ (por \eqref{eq:ns-norma} sirve
+$c=(1-\eps)^{-1/2}$; en~\cite{PW17} se usa $c=\varrho$). Por el teorema~\ref{teo:sc-cotas}(iv),
+$f(x+s\vnsk)\le f(x)-s\lambda^2+\omega_*(sc\lambda)$ mientras $sc\lambda<1$. Igual que en el caso exacto
+(teorema~\ref{teo:sc-damped}), para $\hat s=1/(1+c\lambda)$ el lado derecho queda por debajo de $f(x)-a\hat s\lambda^2$, de
+modo que el retroceso termina con $s\ge b/(1+c\lambda)$ (aquí se usa $\log(1+u)\le u-\frac{u^2}{2(1+u)}$ y la condición $a\le1-\frac12c^2$) y el descenso es al menos $ab\lambda^2/(1+c\lambda)$, que es creciente
+en $\lambda$ y por tanto $\ge\nu$ cuando $\lambda>\eta$.
+(b) Con paso unitario, se repite la demostración del teorema~\ref{teo:sc-quad} con $\vnsk=\vne+(\vnsk-\vne)$: el
+primer sumando aporta el término cuadrático $\cO(\lamf^2)$ y el segundo, por \eqref{eq:ns-dir}, un término lineal
+$\cO(\eps\lamf)$. Para $\lamf$ por debajo del umbral, la suma es $\le\frac{16}{25}\lamf$.
+\end{proof}
+
+\begin{teorema}[Complejidad de Newton Sketch {\cite[Teorema~2]{PW17}}]\label{teo:pw2}
+Sea $f$ autoconcordante estándar y estrictamente convexa. Si el \emph{sketch} (subgaussiano o SRHT) tiene tamaño
+$m\ge c_3\,d/\eps^2$ (con factores logarítmicos adicionales para la SRHT), el algoritmo~\ref{alg:ns} devuelve un punto con
+$f(x)-f^\star\le\delta$ en a lo sumo
+\[ N=\frac{f(x_0)-f^\star}{\nu}+0.65\,\log_2\frac{1}{16\,\delta} \]
+iteraciones, con probabilidad al menos $1-c_1Ne^{-c_2m}$.
+\end{teorema}
+
+\paragraph{Lectura.}
+\begin{itemize}
+  \item La estructura es la del teorema~\ref{teo:sc-complejidad}: fase de descenso constante más fase rápida. El
+        cambio es que $\log_2\log_2(1/\delta)$ pasa a ser un término proporcional a $\log_2(1/\delta)$:
+        \textbf{convergencia lineal}, con razón $\frac{16}{25}$ en $\lamf$.
+  \item \textbf{No aparece $\kappa$}, ni $\mu$, ni $L$: solo $a$, $b$ y $\eps$. Y $m$ depende solo de $d$.
+  \item La probabilidad de fallo se controla con la cota de la unión sobre las $N$ iteraciones; como decae
+        exponencialmente en $m$, no es una restricción en la práctica.
+  \item Las constantes \eqref{eq:eta-nu} son muy conservadoras. Con $\eps=\tfrac18$, $a=0.1$, $b=0.5$ se obtiene
+        $\varrho=\tfrac97$, $\eta\approx4.3\cdot10^{-3}$ y $\nu\approx9.3\cdot10^{-7}$. En los experimentos la fase 1 dura
+        unas pocas iteraciones, no $10^6(f(x_0)-f^\star)$.
+\end{itemize}
+
+\section{Coste y comparación}
+
+Con SRHT y $m\asymp d$, una iteración cuesta
+\[ \underbrace{\cO(nd)}_{B\text{ y }\nabla f}+\underbrace{\cO(nd\log m)}_{S_tB}+\underbrace{\cO(md^2)}_{(S_tB)\T(S_tB)}+\underbrace{\cO(d^3)}_{\text{sistema}}=\cO(nd\log d+d^3), \]
+que es $\cO(nd\log d)$, casi lineal en el tamaño de los datos, cuando $n\gtrsim d^2$.
+
+\begin{table}[ht]
+\centering\small
+\caption{Coste total para alcanzar precisión $\delta$ en un problema del tipo \eqref{eq:problema-general} con
+$n\gtrsim d^2$ (órdenes de magnitud, según~\cite{PW17,LWP21}).}
+\label{tab:complejidad-ns}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Método & Coste total & ¿Depende de $\kappa$? \\
+\midrule
+Descenso de gradiente & $\kappa\,nd\,\log(1/\delta)$ & sí \\
+Gradiente acelerado (Nesterov) & $\sqrt\kappa\,nd\,\log(1/\delta)$ & sí \\
+Newton exacto & $nd^2\,\log\log(1/\delta)$ & no \\
+Newton Sketch, $m\asymp d$ & $nd\log d\,\log(1/\delta)$ & no \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Newton Sketch cambia el factor $d$ de Newton por $\log d\cdot\log(1/\delta)/\log\log(1/\delta)$: gana cuando $d$ es grande. El
+precio es pasar de convergencia cuadrática a lineal. Recuperar la cuadrática es uno de los objetivos del
+capítulo~\ref{cap:ans}.
+
+\section{Restricciones, \emph{sketch} parcial y método de barrera}
+
+\paragraph{\emph{Sketch} parcial.} Si $f=f_0+g$ y el hessiano de $g$ es barato (diagonal, por ejemplo), solo se
+comprime $f_0$:
+\begin{equation}\label{eq:ns-parcial}
+  H_S(x)=B_0(x)\T S\T SB_0(x)+\nabla^2g(x),\qquad B_0=\nabla^2f_0^{1/2}.
+\end{equation}
+El lema~\ref{lem:ns-cerca} sigue valiendo, porque $(1-\eps)B_0\T B_0\preceq B_0\T S\T SB_0\preceq(1+\eps)B_0\T B_0$ implica
+$(1-\eps)H\preceq H_S\preceq(1+\eps)H$ al sumar $\nabla^2g\succeq0$ a los tres miembros. Esta es la forma que explota
+el capítulo siguiente, donde además se aprovecha que $\nabla^2 g\succeq\mu I$ para \emph{reducir} $m$.
+
+\paragraph{Método de barrera.} Para problemas con restricciones, \cite{PW17} usa Newton Sketch como
+resolvedor del centrado en el algoritmo~\ref{alg:barrera}: cada $F_\theta$ es autoconcordante y se le aplica el
+teorema~\ref{teo:pw2}. El número total de pasos de Newton Sketch es el número de centrados,
+$\lceil\log(n_c/(\theta_0\delta))/\log\mu_b\rceil$ con $n_c$ restricciones, multiplicado por una cota por centrado de la
+forma $\frac{n_c(\mu_b-1-\log\mu_b)}{\nu}+0.65\log_2\frac{1}{16\delta}$ \cite[Teorema~4]{PW17}. Para un programa lineal
+con $n$ restricciones y $d$ variables, cada paso cuesta $\cO(nd\log d+d^3)$ en lugar de $\cO(nd^2)$
+(sección~\ref{sec:pl}).
+
+\begin{resumen}
+\begin{itemize}
+  \item Newton Sketch: $\vnsk=-(B\T S_t\T S_tB)^{-1}\nabla f$; gradiente exacto, hessiano comprimido, $S_t$ nuevo en cada iteración.
+  \item Bajo un encaje con distorsión $\eps$: $\nrm{\vnsk-\vne}_x\le\frac{\eps}{1-\eps}\lamf$ y $\lamt^2\in[\frac{1}{1+\eps},\frac{1}{1-\eps}]\lamf^2$.
+  \item Análisis euclídeo: recurrencia lineal-cuadrática $\eps\kappa\nrm{\Delta}+\frac{4\LH}{\mu}\nrm{\Delta}^2$ (local, con $\kappa$).
+  \item Análisis autoconcordante: $(f(x_0)-f^\star)/\nu+0.65\log_2(1/(16\delta))$ iteraciones con $m\asymp d$; sin $\kappa$.
+  \item Coste total $\cO(nd\log d\log(1/\delta))$: lineal en los datos salvo logaritmos.
+\end{itemize}
+\end{resumen}
+
+
+\begin{thebibliography}{99}
+\addcontentsline{toc}{chapter}{Bibliografía}
+\small
+
+\bibitem{PW17} M. Pilanci y M. J. Wainwright. Newton Sketch: A near linear-time optimization algorithm with
+linear-quadratic convergence. \emph{SIAM Journal on Optimization}, 27(1):205--245, 2017. (Los enunciados de este
+documento siguen la versión de arXiv:1505.02250.)
+
+\bibitem{LWP21} J. Lacotte, Y. Wang y M. Pilanci. Adaptive Newton Sketch: Linear-time optimization with quadratic
+convergence and effective Hessian dimensionality. \emph{Proceedings of the 38th International Conference on Machine
+Learning (ICML)}, PMLR 139, 2021. arXiv:2105.07291.
+
+\bibitem{PW16} M. Pilanci y M. J. Wainwright. Iterative Hessian sketch: Fast and accurate solution approximation for
+constrained least-squares. \emph{Journal of Machine Learning Research}, 17(53):1--38, 2016.
+
+\bibitem{LP20} J. Lacotte y M. Pilanci. Effective dimension adaptive sketching methods for faster regularized
+least-squares optimization. \emph{Advances in Neural Information Processing Systems (NeurIPS)}, 2020.
+
+\bibitem{BV} S. Boyd y L. Vandenberghe. \emph{Convex Optimization}. Cambridge University Press, 2004.
+
+\bibitem{Nesterov} Y. Nesterov. \emph{Lectures on Convex Optimization}, 2.ª ed. Springer, 2018.
+
+\bibitem{NN94} Y. Nesterov y A. Nemirovskii. \emph{Interior-Point Polynomial Algorithms in Convex Programming}. SIAM, 1994.
+
+\bibitem{Bach10} F. Bach. Self-concordant analysis for logistic regression. \emph{Electronic Journal of Statistics},
+4:384--414, 2010.
+
+\bibitem{ZX15} Y. Zhang y L. Xiao. DiSCO: Distributed optimization for self-concordant empirical loss.
+\emph{Proceedings of the 32nd International Conference on Machine Learning (ICML)}, 2015.
+
+\bibitem{Woodruff14} D. P. Woodruff. Sketching as a tool for numerical linear algebra. \emph{Foundations and Trends in
+Theoretical Computer Science}, 10(1--2):1--157, 2014.
+
+\bibitem{MT20} P.-G. Martinsson y J. A. Tropp. Randomized numerical linear algebra: Foundations and algorithms.
+\emph{Acta Numerica}, 29:403--572, 2020.
+
+\bibitem{Mahoney11} M. W. Mahoney. Randomized algorithms for matrices and data. \emph{Foundations and Trends in Machine
+Learning}, 3(2):123--224, 2011.
+
+\bibitem{JL84} W. B. Johnson y J. Lindenstrauss. Extensions of Lipschitz mappings into a Hilbert space.
+\emph{Contemporary Mathematics}, 26:189--206, 1984.
+
+\bibitem{Sarlos06} T. Sarlós. Improved approximation algorithms for large matrices via random projections.
+\emph{47th IEEE Symposium on Foundations of Computer Science (FOCS)}, 2006.
+
+\bibitem{AC09} N. Ailon y B. Chazelle. The fast Johnson--Lindenstrauss transform and approximate nearest neighbors.
+\emph{SIAM Journal on Computing}, 39(1):302--322, 2009.
+
+\bibitem{Tropp11} J. A. Tropp. Improved analysis of the subsampled randomized Hadamard transform. \emph{Advances in
+Adaptive Data Analysis}, 3(1--2):115--126, 2011.
+
+\bibitem{BG13} C. Boutsidis y A. Gittens. Improved matrix algorithms via the subsampled randomized Hadamard transform.
+\emph{SIAM Journal on Matrix Analysis and Applications}, 34(3):1301--1340, 2013.
+
+\bibitem{Tropp12} J. A. Tropp. User-friendly tail bounds for sums of random matrices. \emph{Foundations of Computational
+Mathematics}, 12:389--434, 2012.
+
+\bibitem{CW13} K. L. Clarkson y D. P. Woodruff. Low rank approximation and regression in input sparsity time.
+\emph{45th ACM Symposium on Theory of Computing (STOC)}, 2013.
+
+\bibitem{NN13} J. Nelson y H. L. Nguyên. OSNAP: Faster numerical linear algebra algorithms via sparser subspace
+embeddings. \emph{54th IEEE Symposium on Foundations of Computer Science (FOCS)}, 2013.
+
+\bibitem{MM13} X. Meng y M. W. Mahoney. Low-distortion subspace embeddings in input-sparsity time and applications to
+robust linear regression. \emph{45th ACM Symposium on Theory of Computing (STOC)}, 2013.
+
+\bibitem{NN14} J. Nelson y H. L. Nguyên. Lower bounds for oblivious subspace embeddings. \emph{International
+Colloquium on Automata, Languages and Programming (ICALP)}, 2014.
+
+\bibitem{Cohen16} M. B. Cohen. Nearly tight oblivious subspace embeddings by trace inequalities. \emph{27th ACM-SIAM
+Symposium on Discrete Algorithms (SODA)}, 2016.
+
+\bibitem{CNW16} M. B. Cohen, J. Nelson y D. P. Woodruff. Optimal approximate matrix product in terms of stable rank.
+\emph{International Colloquium on Automata, Languages and Programming (ICALP)}, 2016.
+
+\bibitem{ACW17} H. Avron, K. L. Clarkson y D. P. Woodruff. Sharper bounds for regularized data fitting.
+\emph{APPROX/RANDOM}, 2017.
+
+\bibitem{DMMS11} P. Drineas, M. W. Mahoney, S. Muthukrishnan y T. Sarlós. Faster least squares approximation.
+\emph{Numerische Mathematik}, 117(2):219--249, 2011.
+
+\bibitem{RT08} V. Rokhlin y M. Tygert. A fast randomized algorithm for overdetermined linear least-squares regression.
+\emph{Proceedings of the National Academy of Sciences}, 105(36):13212--13217, 2008.
+
+\bibitem{AMT10} H. Avron, P. Maymounkov y S. Toledo. Blendenpik: Supercharging LAPACK's least-squares solver.
+\emph{SIAM Journal on Scientific Computing}, 32(3):1217--1236, 2010.
+
+\bibitem{MSM14} X. Meng, M. A. Saunders y M. W. Mahoney. LSRN: A parallel iterative solver for strongly over- or
+underdetermined systems. \emph{SIAM Journal on Scientific Computing}, 36(2):C95--C118, 2014.
+
+\bibitem{SV09} T. Strohmer y R. Vershynin. A randomized Kaczmarz algorithm with exponential convergence.
+\emph{Journal of Fourier Analysis and Applications}, 15:262--278, 2009.
+
+\bibitem{LL10} D. Leventhal y A. S. Lewis. Randomized methods for linear constraints: Convergence rates and
+conditioning. \emph{Mathematics of Operations Research}, 35(3):641--654, 2010.
+
+\bibitem{GR15} R. M. Gower y P. Richtárik. Randomized iterative methods for linear systems. \emph{SIAM Journal on
+Matrix Analysis and Applications}, 36(4):1660--1690, 2015.
+
+\bibitem{RKM19} F. Roosta-Khorasani y M. W. Mahoney. Sub-sampled Newton methods. \emph{Mathematical Programming},
+174:293--326, 2019.
+
+\bibitem{EM15} M. A. Erdogdu y A. Montanari. Convergence rates of sub-sampled Newton methods. \emph{Advances in Neural
+Information Processing Systems (NeurIPS)}, 2015.
+
+\bibitem{WW} A. J. Wood, B. F. Wollenberg y G. B. Sheblé. \emph{Power Generation, Operation, and Control}, 3.ª ed.
+Wiley, 2014.
+
+\bibitem{PP91} M. V. F. Pereira y L. M. V. G. Pinto. Multi-stage stochastic optimization applied to energy planning.
+\emph{Mathematical Programming}, 52:359--375, 1991.
+
+\bibitem{SDR} A. Shapiro, D. Dentcheva y A. Ruszczyński. \emph{Lectures on Stochastic Programming: Modeling and
+Theory}. SIAM, 2009.
+
+\bibitem{RU00} R. T. Rockafellar y S. Uryasev. Optimization of conditional value-at-risk. \emph{Journal of Risk},
+2(3):21--41, 2000.
+
+\bibitem{NJLS09} A. Nemirovski, A. Juditsky, G. Lan y A. Shapiro. Robust stochastic approximation approach to
+stochastic programming. \emph{SIAM Journal on Optimization}, 19(4):1574--1609, 2009.
+
+\bibitem{SSSS09} S. Shalev-Shwartz, O. Shamir, N. Srebro y K. Sridharan. Stochastic convex optimization.
+\emph{Conference on Learning Theory (COLT)}, 2009.
+
+\bibitem{Schwartz97} E. S. Schwartz. The stochastic behavior of commodity prices: Implications for valuation and
+hedging. \emph{The Journal of Finance}, 52(3):923--973, 1997.
+
+\bibitem{Rios24} D. Ríos, A. Pérez, J. Carabalí y L. Meneses. Poder de mercado y eventos climáticos adversos en un
+mercado de electricidad hidro-dominado. \emph{Borradores de Economía} n.º 1266, Banco de la República (Colombia), 2024.
+
+\bibitem{Valora24} Valora Analitik. «Niveles de embalses en Colombia llegan a mínimos de 20 años; piden medidas más
+fuertes». Abril de 2024 (recoge la comunicación de XM, operador del sistema, al Gobierno nacional).
+\url{https://www.valoraanalitik.com/niveles-de-embalses-en-colombia-llegan-a-minimos-de-20-anos/}
+
+\bibitem{NOAA} NOAA Climate Prediction Center. Oceanic Niño Index (ONI): \emph{Cold \& warm episodes by season}.
+\url{https://origin.cpc.ncep.noaa.gov/products/analysis_monitoring/ensostuff/ONI_v5.php}
+
+\end{thebibliography}
+\end{document}
