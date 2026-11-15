@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1794773337.61719 "c:/Users/pctor/Desktop/Nacional/Semestre8/AlgebraLinealNumerica/ProyectoClase/ProyectoCompletoGithub/Newton-Sketch-Teoria-e-Implementacion/Presentacion/Latex/Diapositivas/DiapositivasNewtonSketch.tex" "DiapositivasNewtonSketch.pdf" "DiapositivasNewtonSketch" 1794773341.79692 0
+["pdflatex"] 1794775179.70873 "c:/Users/pctor/Desktop/Nacional/Semestre8/AlgebraLinealNumerica/ProyectoClase/ProyectoCompletoGithub/Newton-Sketch-Teoria-e-Implementacion/Presentacion/Latex/Diapositivas/DiapositivasNewtonSketch.tex" "DiapositivasNewtonSketch.pdf" "DiapositivasNewtonSketch" 1794775184.20855 0
   "C:/Users/pctor/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1793762054 82686 2381c3433487640bf26aa76a10db7eb2 ""
   "C:/Users/pctor/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/ecsi0900.pk" 1794145594 22084 ca46e41bfef23880fbfed2570a75a36b ""
   "C:/Users/pctor/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/ecsi1095.pk" 1794414462 26868 07960ce7f2ba25d3429ed50bbdf3d6ff ""
@@ -254,12 +254,13 @@
   "C:/Users/pctor/AppData/Local/Programs/MiKTeX/tex/latex/translator/translator.sty" 1622471510 8765 56d370785f0143111ff9898b5adfe08e ""
   "C:/Users/pctor/AppData/Local/Programs/MiKTeX/tex/latex/url/url.sty" 1388490452 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
   "C:/Users/pctor/AppData/Local/Programs/MiKTeX/tex/latex/xcolor/xcolor.sty" 1729265222 55384 b454dec21c2d9f45ec0b793f0995b992 ""
-  "DiapositivasNewtonSketch.aux" 1794773341 3734 e0ef9b131e0fc23e5df44efd5f509f21 "pdflatex"
-  "DiapositivasNewtonSketch.nav" 1794773341 2241 7f6ff9154121a2c61f2f1296bcf279f7 "pdflatex"
-  "DiapositivasNewtonSketch.out" 1794773339 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
-  "DiapositivasNewtonSketch.tex" 1794773336 20013 f39ab797d4a4ef8af15f0df5c726b255 ""
+  "DiapositivasNewtonSketch.aux" 1794775183 3734 e0ef9b131e0fc23e5df44efd5f509f21 "pdflatex"
+  "DiapositivasNewtonSketch.nav" 1794775183 2241 7f6ff9154121a2c61f2f1296bcf279f7 "pdflatex"
+  "DiapositivasNewtonSketch.out" 1794775181 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
+  "DiapositivasNewtonSketch.tex" 1794775178 20008 c849d44db5e54d3dcda2fde779b115c5 ""
   "Eplisoides.png" 1794586403 408702 0a73b126adacff44f0179f0104f52946 ""
-  "c:/Users/pctor/Desktop/Nacional/Semestre8/AlgebraLinealNumerica/ProyectoClase/ProyectoCompletoGithub/Newton-Sketch-Teoria-e-Implementacion/Presentacion/Latex/Diapositivas/DiapositivasNewtonSketch.tex" 1794773336 20013 f39ab797d4a4ef8af15f0df5c726b255 ""
+  "FigAutoconcordante.png" 1794775157 294417 6c92e77acd0c536521cd09a3e5ba9207 ""
+  "c:/Users/pctor/Desktop/Nacional/Semestre8/AlgebraLinealNumerica/ProyectoClase/ProyectoCompletoGithub/Newton-Sketch-Teoria-e-Implementacion/Presentacion/Latex/Diapositivas/DiapositivasNewtonSketch.tex" 1794775178 20008 c849d44db5e54d3dcda2fde779b115c5 ""
   (generated)
   "DiapositivasNewtonSketch.aux"
   "DiapositivasNewtonSketch.log"
