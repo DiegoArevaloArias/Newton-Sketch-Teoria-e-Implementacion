@@ -150,9 +150,9 @@
       \]
       \pause
       \begin{itemize}
+        \item \textbf{Ejemplos:} $-\ln(\det(X))$, $-\sum_{i=1}^{n}\ln(x_i)$, $-\ln(1-\|x\|_2^2)$.      
         \item \textbf{Norma local:} $\norm{h}_x=\sqrt{h^\top\Hess(x)h}$.
         \item \textbf{Elipsoide de Dikin:} $\mathcal E_x=\{y:\norm{y-x}_x\le 1\}$ está contenido en el dominio de $f$.
-        \item \textbf{Ejemplos:} $-\ln(\det(X))$, $-\sum_{i=1}^{n}\ln(x_i)$, $-\ln(1-\|x\|_2^2)$.      
       \end{itemize}
     \end{column}
     \begin{column}{0.38\textwidth}
@@ -434,24 +434,47 @@
 \end{frame}
 
 \begin{frame}{Newton Sketch: el algoritmo}
-  \textbf{Idea:} sustituir la raíz exacta por una versión comprimida.
+  \small
+  \textbf{Idea:} sustituir la raíz del Hessiano por
+  una versión comprimida.
+
   \vspace{4pt}
   \begin{alertblock}{Newton Sketch}
     \[
-      \widehat H_t=\bigl(S_t D_t^{1/2}A\bigr)^{\!\top}\bigl(S_t D_t^{1/2}A\bigr),
+      \widehat H_t =
+      \bigl(S_tD_t^{1/2}A\bigr)^\top
+      \bigl(S_tD_t^{1/2}A\bigr)+\mu I,
       \qquad
-      x_{t+1}=x_t-\mu_t\,\widehat H_t^{-1}\nablaf(x_t).
+      x_{t+1}=x_t+\mu_t\Delta_t.
     \]
   \end{alertblock}
+
   \pause
   \begin{enumerate}
     \item Calcular $\nablaf(x_t)$ y $D_t^{1/2}A$.
-    \item Generar $S_t\in\R^{m\times n}$ \alert{independiente} en cada iteración.
-    \item Formar $S_tD_t^{1/2}A$ y resolver el sistema $\widehat H_t\,\Delta=-\nablaf(x_t)$.
-    \item Búsqueda lineal sobre $f$ y actualizar $x_{t+1}=x_t+\mu_t\Delta$.
+
+    \item Generar $S_t\in\R^{m\times n}$
+    \alert{independiente} en cada iteración.
+
+    \item Formar $S_tD_t^{1/2}A$ y resolver
+    \[
+      \widehat H_t\Delta_t=-\nablaf(x_t).
+    \]
+
+    \item Elegir $\mu_t$ mediante
+    \textbf{búsqueda lineal de Armijo}:
+    \[
+      f(x_t+\mu_t\Delta_t)
+      \leq f(x_t)+\alpha\mu_t
+      \nablaf(x_t)^\top\Delta_t.
+    \]
+    Actualizar $x_{t+1}=x_t+\mu_t\Delta_t$.
   \end{enumerate}
-  \textbf{Costo:} $O(\text{costo}(SD^{1/2}A)+md^2+d^3)$ en lugar de $O(nd^2+d^3)$.
+
+
+
 \end{frame}
+
 
 \begin{frame}{El problema: la diagonal y la estructura}
   \begin{itemize}
@@ -462,7 +485,8 @@
     \item Si $D$ es casi singular (muchos $\phi_i''\approx 0$), el sketch pierde rango efectivo.
   \end{itemize}
   \begin{block}{Idea}
-    Elegir $S$ según la estructura: Gaussiana/SRHT cuando $m$ pequeño importa; CountSketch cuando $A$ es dispersa.
+    Elegir $S$ según la estructura: Gaussiana/SRHT cuando $m$ pequeño importa.
+    CountSketch cuando $A$ es dispersa.
   \end{block}
   % TODO: ajustar esta diapositiva a la interpretación exacta de "diagonal" que usen en su trabajo.
 \end{frame}
@@ -485,46 +509,137 @@
 % ============================================================
 % 7. EXPERIMENTOS Y RESULTADOS
 % ============================================================
+
+
+
 \begin{frame}{Experimentos: configuración}
-  \begin{itemize}
-    \item \textbf{Problemas:} regresión logística, mínimos cuadrados, \dots
-    \item \textbf{Datos:} sintéticos ($n=10^5$--$10^6$, $d=100$--$500$) y reales (\texttt{nombre del dataset}).
-    \item \textbf{Métodos comparados:} Newton exacto, gradiente descendente, L-BFGS, Newton Sketch (Gaussiana / CountSketch / SRHT).
-    \item \textbf{Parámetros:} $m=c\,d$ con $c\in\{2,4,8\}$; criterio de parada $\lambda(x)^2/2\le 10^{-8}$.
-    \item \textbf{Métricas:} error $f(x_t)-f^\star$ vs.\ iteraciones y vs.\ tiempo.
-  \end{itemize}
+\small
+
+\begin{block}{Problema: regresión logística regularizada}
+\[
+\min_{x\in\mathbb R^d}
+f(x)=\sum_{i=1}^{n}\log(1+e^{-y_i a_i^\top x})
++\frac{\mu}{2}\|x\|_2^2.
+\]
+\end{block}
+
+\textbf{Construcción de los datos sintéticos:}
+\begin{itemize}
+    \item Matriz de diseño:
+    $A=G\operatorname{diag}(j^{-p})Q^\top$,
+    con $G$ gaussiana, $Q$ ortogonal y $p=1$.
+    \item Etiquetas $y_i\in\{-1,1\}$ generadas mediante
+    $\mathbb P(y_i=1)=\sigma(a_i^\top x_\star)$.
+\end{itemize}
+
+\vspace{0.1cm}
+\begin{itemize}
+    \item \textbf{Dimensiones:} $n=5000$, $d=100$;
+    regularización $\mu=0.5$.
+    \item \textbf{Métodos:} Newton exacto, Gaussian,
+    CountSketch, RowSampling y SRHT.
+    \item \textbf{Tamaño del sketch:}
+    $m=cd$, \quad
+    $c\in\{1,1.5,2,3,4,6,8\}$.
+    \item \textbf{Parada:}
+    $\displaystyle
+    \frac{f(x_t)-f^\star}{f(x_0)-f^\star}
+    \leq 10^{-4}$.
+    \item \textbf{Métricas:} tiempo total, iteraciones
+    y memoria asignada.
+\end{itemize}
+
 \end{frame}
 
-\begin{frame}{Resultados}
-  \begin{columns}[c]
-    \begin{column}{0.52\textwidth}
-      \centering
-      % \includegraphics[width=\textwidth]{fig_convergencia.pdf}
-      \imgspace{4.2cm}{Figura: $f(x_t)-f^\star$ vs.\ iteraciones}
-    \end{column}
-    \begin{column}{0.44\textwidth}
-      \centering\small
-      \begin{tabular}{lcc}
-        \toprule
-        Método & Iter. & Tiempo (s) \\
-        \midrule
-        Newton & $?$ & $?$ \\
-        NS Gaussiana & $?$ & $?$ \\
-        NS CountSketch & $?$ & $?$ \\
-        \bottomrule
-      \end{tabular}
-    \end{column}
-  \end{columns}
+
+\begin{frame}{Resultados: tiempo y memoria}
+\small
+
+\begin{block}{Comparación para $n=5000$, $d=100$, $m=600$}
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{lrrrr}
+\hline
+\textbf{Método} & \textbf{Tiempo}
+& \textbf{Memoria} & \textbf{Iter.}
+& \textbf{Speedup}\\
+\hline
+Newton exacto & 18.37 ms & 4.1 MiB & 4 & 1.00$\times$\\
+Gaussian      & 127.82 ms & 8.7 MiB & 4 & 0.14$\times$\\
+CountSketch   & 7.53 ms & 796 KiB & 4 & 2.44$\times$\\
+RowSampling   & \textbf{7.43 ms} & \textbf{716 KiB}
+              & 4 & \textbf{2.47$\times$}\\
+SRHT          & 18.32 ms & 1.1 MiB & 4 & 1.00$\times$\\
+\hline
+\end{tabular}
+\end{block}
+
+\vspace{0.1cm}
+
+\begin{itemize}
+    \item \textbf{RowSampling:} reduce el tiempo un
+    $59.6\%$ y la memoria asignada un $82.9\%$.
+
+    \item \textbf{CountSketch:} consigue una aceleración
+    de $2.44\times$ con la misma precisión.
+
+    \item \textbf{Gaussian:} generar la proyección densa
+    y calcular $SB$ tiene costo $O(mnd)$,
+    superior al de los sketches dispersos.
+\end{itemize}
+
+\vspace{0.1cm}
+\centering
+\footnotesize
+\textcolor{main}{\textbf{El costo de construir el sketch
+determina la ventaja computacional.}}
+
 \end{frame}
+
+
 
 \begin{frame}{Resultados: efecto del tamaño del sketch}
-  \centering
-  % \includegraphics[width=0.7\textwidth]{fig_m.pdf}
-  \fbox{\parbox[c][5cm][c]{0.7\textwidth}{\centering Figura: tasa de convergencia en función de $m/d$}}
-  \vspace{6pt}
+\small
 
-  \small Verifica que la tasa lineal mejora al aumentar $m$, ya que $\varepsilon\sim\sqrt{d/m}$.
+\begin{block}{Tiempo total según $m/d$}
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{crrr}
+\hline
+$m/d$ & $m$ & CountSketch & RowSampling\\
+\hline
+1 & 100 & 17.53 ms & 13.31 ms\\
+2 & 200 & 10.72 ms & 11.90 ms\\
+3 & 300 & 8.72 ms  & 8.37 ms\\
+4 & 400 & 8.59 ms  & 8.22 ms\\
+6 & 600 & \textbf{7.53 ms} & \textbf{7.43 ms}\\
+8 & 800 & 7.53 ms  & 8.53 ms\\
+\hline
+\end{tabular}
+
+\vspace{0.1cm}
+\footnotesize
+Newton exacto: $18.37$ ms.
+\end{block}
+
+\vspace{0.1cm}
+
+\begin{itemize}
+    \item Un $m$ pequeño reduce el costo por iteración,
+    pero puede exigir más iteraciones.
+    \item Un $m$ grande mejora la aproximación del
+    Hessiano, pero aumenta el costo del sketch.
+    \item Con $m=600$, la matriz $SB$ contiene
+    \textbf{$88\%$ menos elementos} que
+    $B=D^{1/2}A$.
+\end{itemize}
+
+
+
 \end{frame}
+
 
 % ============================================================
 % 8. CONCLUSIONES Y REFERENCIAS
