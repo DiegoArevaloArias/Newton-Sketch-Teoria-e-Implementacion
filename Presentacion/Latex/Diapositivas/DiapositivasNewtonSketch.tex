@@ -2,11 +2,16 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
+% Mantiene Computer Modern si existe su versión vectorial T1.
+\IfFileExists{sfss1095.pfb}{}{\IfFileExists{lmodern.sty}{\usepackage{lmodern}}{}}
+% Distribuciones TeX con el idioma disponible solamente en formato .ini.
+\IfFileExists{spanish.ldf}{}{\PassOptionsToPackage{provide=*}{babel}}
 \usepackage[spanish]{babel}
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage{tikz}
+\usetikzlibrary{babel}
 
 \definecolor{main}{RGB}{20,60,110}
 
@@ -48,9 +53,41 @@
 
 \title{Newton Sketch}
 \subtitle{Optimización de segundo orden con proyecciones aleatorias}
-\author{Diego Arévalo y Yeferson Getial}
+\author{Diego Arévalo}
 \institute{Optimización Numérica y Álgebra Lineal Numérica}
 \date{}
+
+
+% Citas de autor y año, visibles también antes de las pausas del frame.
+\newcommand{\citaslide}[1]{%
+  \nointerlineskip\vbox to 0pt{\hbox to 0pt{%
+    \begin{tikzpicture}[remember picture,overlay]
+      \node[anchor=south east,xshift=-0.5cm,yshift=0.5cm]
+        at (current page.south east)
+        {\footnotesize\textcolor{gray}{[#1]}};
+    \end{tikzpicture}\hss}\vss}\nointerlineskip}
+
+% Si los dos PNG están en el proyecto, se usan las imágenes originales.
+% Las figuras vectoriales permiten compilar también el .tex por separado.
+\newcommand{\curvaautoconcordante}{%
+  \resizebox{0.98\linewidth}{!}{\begin{tikzpicture}
+    \draw[->,gray] (0,0)--(3.9,0) node[right] {$x$};
+    \draw[->,gray] (0,-1.45)--(0,2.2) node[above] {$f(x)$};
+    \draw[main,very thick,domain=.15:3.65,samples=75] plot (\x,{-ln(\x)});
+    \fill[main] (1,0) circle (1.3pt) node[above right] {$1$};
+    \node[main] at (2.4,1) {$f(x)=-\log x$};
+  \end{tikzpicture}}}
+
+\newcommand{\elipsoidesdikin}{%
+  \resizebox{0.98\linewidth}{!}{\begin{tikzpicture}
+    \draw[->,gray] (0,0)--(4.4,0) node[right] {$x_1$};
+    \draw[->,gray] (0,0)--(0,3.5) node[above] {$x_2$};
+    % Para -log(x_1)-log(x_2), al radio r corresponden semiejes r x_1 y r x_2.
+    \draw[main,thick,fill=main!8] (1,2.15) ellipse (.60 and 1.29);
+    \draw[main,thick,fill=main!16] (2.6,.8) ellipse (1.56 and .48);
+    \fill[main] (1,2.15) circle (1.4pt); \fill[main] (2.6,.8) circle (1.4pt);
+    \node[align=center,main] at (2.95,2.5) {$-\log x_1-\log x_2$\\$r=0.6$};
+  \end{tikzpicture}}}
 
 \begin{document}
 
@@ -82,6 +119,7 @@
 \end{frame}
 
 \begin{frame}{Motivación: ¿por qué Newton y por qué es caro?}
+  \citaslide{Pilanci y Wainwright, 2017}
   \begin{columns}[T]
     \begin{column}{0.48\textwidth}
       \textcolor{main}{\textbf{Primer orden (gradiente)}}
@@ -119,6 +157,7 @@
 % 2. FUNCIONES AUTOCONCORDANTES
 % ============================================================
 \begin{frame}{Funciones autoconcordantes}
+  \citaslide{Boyd y Vandenberghe, 2004, §9.6}
   \begin{columns}[T]
     \begin{column}{0.58\textwidth}
       \begin{block}{Definición (una variable)}
@@ -136,12 +175,15 @@
     \end{column}
     \begin{column}{0.38\textwidth}
       \centering
-      \includegraphics[width=\linewidth]{FigAutoconcordante.png}
+      \IfFileExists{FigAutoconcordante.png}{\includegraphics[width=\linewidth]{FigAutoconcordante.png}}{\curvaautoconcordante}
     \end{column}
   \end{columns}
 \end{frame}
 
 \begin{frame}{Intuición: norma local y elipsoide de Dikin}
+  \citaslide{Nesterov y Nemirovskii, 1994, cap.~2}
+  % Precisión: la inclusión general en el dominio vale para el elipsoide abierto de radio uno.
+
   \begin{columns}[T]
     \begin{column}{0.58\textwidth}
       \textbf{En varias variables:} $f$ es autoconcordante si $\varphi(t)=f(x+th)$ lo es para todo $x$ y $h$. Equivalentemente,
@@ -157,7 +199,7 @@
     \end{column}
     \begin{column}{0.38\textwidth}
       \centering
-      \includegraphics[width=\linewidth]{Eplisoides.png}
+      \IfFileExists{Eplisoides.png}{\includegraphics[width=\linewidth]{Eplisoides.png}}{\elipsoidesdikin}
     \end{column}
   \end{columns}
 \end{frame}
@@ -165,6 +207,8 @@
 
 
 \begin{frame}{Newton en funciones autoconcordantes}
+  \small
+  \citaslide{Boyd y Vandenberghe, 2004, §9.6}
 
     \begin{block}{Ventaja de la autoconcordancia}
         Controla la variación de la Hessiana sin requerir
@@ -173,7 +217,7 @@
 
     \pause
 
-    \begin{itemize}
+    \begin{itemize}\setlength{\itemsep}{1pt}
         \item \textbf{Newton clásico:} suele requerir hipótesis
         adicionales sobre la Hessiana.
 
@@ -185,7 +229,7 @@
         \pause
 
         \item \textbf{Decremento de Newton:}
-        \[
+        \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}\[
         \lambda(x)=
         \sqrt{\nabla f(x)^\top
         [\nabla^2 f(x)]^{-1}\nabla f(x)}.
@@ -201,7 +245,7 @@
         cerca del óptimo, sin dependencia explícita del
         número de condición.
     \end{alertblock}
-
+  \vspace*{10pt}
 \end{frame}
 
 
@@ -209,13 +253,14 @@
 % 3. MATRICES DE SKETCH Y SUBSPACE EMBEDDING
 % ============================================================
 \begin{frame}{Matrices de sketch}
+  \citaslide{Martinsson y Tropp, 2020; Woodruff, 2014}
   \begin{columns}[c]
     \begin{column}{0.55\textwidth}
       Una matriz de \emph{sketch} $S\in\R^{m\times n}$, con $m\ll n$, es una proyección aleatoria que comprime filas:
       \[
         A\in\R^{n\times d}\ \longmapsto\ SA\in\R^{m\times d}.
       \]
-      
+
     \end{column}
     \begin{column}{0.4\textwidth}
       \centering
@@ -241,6 +286,13 @@
 \end{frame}
 
 \begin{frame}{Subspace embedding}
+  \citaslide{Johnson y Lindenstrauss, 1984; Woodruff, 2014}
+  \small
+  \textbf{Lema de Johnson--Lindenstrauss.} Para $N$ puntos y $0<\varepsilon<1$,
+  $m=O(\varepsilon^{-2}\log N)$ dimensiones bastan para preservar
+  sus distancias al cuadrado con factores $1\pm\varepsilon$.
+  Aquí pedimos la garantía para \alert{todas} las direcciones de un subespacio.
+  \medskip
   \begin{definition}
     $S\in\R^{m\times n}$ es un \emph{$\varepsilon$-subspace embedding} de $\operatorname{col}(A)$ si, para todo $y\in\R^d$,
     \[
@@ -249,7 +301,7 @@
   \end{definition}
 
   \pause
-  
+
   \begin{itemize}
     \item Equivalente: $\norm{A^\top S^\top S A - A^\top A}_2\le\varepsilon\norm{A}_2^2$ (tras ortonormalizar).
     \item Consecuencia clave: $(SA)^\top(SA)\approx A^\top A$, es decir, una \alert{Hessiana aproximada} con relación espectral $1\pm\varepsilon$.
@@ -257,119 +309,163 @@
 \end{frame}
 
 % ------------------------------------------------------------
-
-\begin{frame}{Ejemplo: CountSketch}
-
-    \begin{block}{Construcción}
-        Cada columna de $S$ tiene un único elemento no nulo
-        en $\{-1,1\}$.
-    \end{block}
-
-    \begin{columns}[c]
-        \begin{column}{0.46\textwidth}
-            \centering
-            \textcolor{main}{\textbf{Matriz original}}
-            \[
-            A=
-            \begin{bmatrix}
-                1 & 0\\
-                0 & 1\\
-                1 & 1\\
-                2 & 0\\
-                0 & 2
-            \end{bmatrix}
-            \]
-        \end{column}
-
-        \begin{column}{0.52\textwidth}
-            \centering
-            \textcolor{main}{\textbf{CountSketch}}
-            \[
-            S=
-            \begin{bmatrix}
-                0 & -1 & 0 & 1 & 0\\
-                1 & 0 & 0 & 0 & -1\\
-                0 & 0 & 1 & 0 & 0
-            \end{bmatrix}
-            \]
-        \end{column}
-    \end{columns}
-
-    \pause
-
-    \vspace{3pt}
-    \centering
-    \textcolor{main}{\textbf{Resultado de la compresión}}
+\begin{frame}{CountSketch aplicado a mínimos cuadrados}
+  \citaslide{Clarkson y Woodruff, 2013}
     \[
-    SA=
-    \begin{bmatrix}
-        2 & -1\\
-        1 & -2\\
-        1 & 1
-    \end{bmatrix}
-    \in\R^{3\times 2}
+        \min_{x\in\mathbb{R}^2} f(x)=\tfrac12\|Ax-b\|_2^2,
+        \qquad x_0=(0,0)^\top .
     \]
 
-    \small
-    \textbf{Costo:} $O(\nnz(A))$.
-    \qquad
-    \alert{Se reducen 5 filas a 3.}
+    {\small
+    \setlength{\arraycolsep}{2.5pt}
+    \begin{columns}[T,onlytextwidth]
 
-\end{frame}
-
-
-
-\begin{frame}{CountSketch: ¿qué información conserva?}
-
-    \begin{columns}[T]
-        \begin{column}{0.48\textwidth}
+        \begin{column}{0.34\textwidth}
             \centering
-            \textcolor{main}{\textbf{Antes del sketch}}
+            \textcolor{main}{\textbf{Datos}}
             \[
-            A^\top A=
-            \begin{bmatrix}
-                6 & 1\\
-                1 & 6
-            \end{bmatrix}
+                A=\begin{bmatrix}
+                    1&0\\ 0&1\\ 1&1\\ 2&0\\ 0&2
+                \end{bmatrix},
+                \quad
+                b=\begin{bmatrix}
+                    2\\1\\0\\2\\0
+                \end{bmatrix}.
             \]
-
-            \small
-            $\operatorname{rank}(A)=2$
         \end{column}
 
-        \begin{column}{0.48\textwidth}
+        \begin{column}{0.40\textwidth}
             \centering
-            \textcolor{main}{\textbf{Después del sketch}}
+            \textcolor{main}{\textbf{CountSketch fijo}}
             \[
-            (SA)^\top(SA)=
-            \begin{bmatrix}
-                6 & -3\\
-                -3 & 6
-            \end{bmatrix}
+                S=\begin{bmatrix}
+                    0 & -1 & 0 & 1 & 0\\
+                    1 &  0 & 0 & 0 & -1\\
+                    0 &  0 & 1 & 0 & 0
+                \end{bmatrix}
+            \]
+        \end{column}
+        \begin{column}{0.24\textwidth}
+            \centering
+            \textcolor{main}{\textbf{Matriz comprimida}}
+            \[
+                SA=\begin{bmatrix}
+                    2 & -1\\
+                    1 & -2\\
+                    1 & 1
+                \end{bmatrix}
+            \]
+            {\footnotesize
+                $A\in\mathbb{R}^{5\times 2}$
+
+                $SA\in\mathbb{R}^{3\times 2}$
+            }
+        \end{column}
+
+    \end{columns}}
+
+    \vspace{0.2cm}
+
+\end{frame}
+\begin{frame}{Hessiano completo y con CountSketch}
+
+    \begin{block}{Actualización de Newton}
+        \[
+            x_{k+1}=x_k-\alpha_k M_k^{-1}\nabla f(x_k),
+            \qquad
+            \nabla f(x_k)=A^\top(Ax_k-b).
+        \]
+        {\small
+        Con $M_k=H$ para Newton exacto y
+        $M_k=\widetilde H$ para Newton Sketch.
+        }
+    \end{block}
+
+    \vspace{0.2cm}
+
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.47\textwidth}
+            \centering
+            \textcolor{main}{\textbf{Newton exacto}}
+            \[
+                H=A^\top A=
+                \begin{bmatrix}
+                    6&1\\
+                    1&6
+                \end{bmatrix}
             \]
 
-            \small
-            $\operatorname{rank}(SA)=2$
+        \end{column}
+
+        \begin{column}{0.51\textwidth}
+            \centering
+            \textcolor{main}{\textbf{CountSketch fijo}}
+            \[
+                \widetilde H=(SA)^\top(SA)
+                =\begin{bmatrix}
+                    6&-3\\
+                    -3&6
+                \end{bmatrix}
+            \]
+
         \end{column}
     \end{columns}
 
-    \pause
+    \vspace{0.2cm}
+    \begin{block}{¿Cómo medimos el progreso?}
+        En el óptimo, $Ax^\star-b=(-1,-1,1,0,0)^\top$
+        y $f^\star=3/2$.
 
-    \begin{block}{¿Qué ocurrió?}
-        \begin{itemize}
-            \item \textbf{Se conserva:} el rango en este ejemplo.
-            \item \textbf{No se conserva exactamente:}
-            el producto $A^\top A$ ni todas las normas.
-        \end{itemize}
+        Mediremos el error $\|x_k-x^\star\|_2$
+        y la brecha $f(x_k)-f^\star$.
     \end{block}
 
-  
+
 
 \end{frame}
+
+\begin{frame}{Error y brecha por iteración}
+    \centering
+    $e_k=x_k-x^\star$, \qquad $E_k=\|e_k\|_2$, \qquad $\Delta_k=f(x_k)-f^\star$.
+
+    \medskip
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \renewcommand{\arraystretch}{1.06}
+    \begin{tabular}{c rr rr rr}
+        \hline
+        & \multicolumn{2}{c}{\textbf{Newton exacto}}
+        & \multicolumn{2}{c}{\textbf{CountSketch}}
+        & \multicolumn{2}{c}{\textbf{CountSketch}}\\
+        & \multicolumn{2}{c}{$\alpha=1$}
+        & \multicolumn{2}{c}{$\alpha=1$}
+        & \multicolumn{2}{c}{$\alpha=9/13$}\\
+        \cline{2-3}\cline{4-5}\cline{6-7}
+        $k$ & $E_k$ & $\Delta_k$ & $E_k$ & $\Delta_k$ & $E_k$ & $\Delta_k$\\
+        \hline
+        0 & 1 & 3 & 1,000 &  3,000 & 1,000 & 3,000\\
+        1 & 0 & 0 & 0,994 &  3,358 & 0,615 & 1,136\\
+        2 & 0 & 0 & 1,265 &  5,580 & 0,379 & 0,430\\
+        3 & 0 & 0 & 1,677 &  9,842 & 0,233 & 0,163\\
+        4 & 0 & 0 & 2,235 & 17,482 & 0,143 & 0,062\\
+        5 & 0 & 0 & 2,980 & 31,076 & 0,088 & 0,023\\
+        6 & 0 & 0 & 3,973 & 55,246 & 0,054 & 0,009\\
+        \hline
+    \end{tabular}
+
+    \begin{block}{Lectura del primer paso}
+        Con el sketch y $\alpha=1$, la distancia al óptimo baja ligeramente
+        aunque la función sube. La brecha pondera cada dirección según
+        la curvatura de $H$, pues $\Delta_k=\tfrac12 e_k^\top H e_k$.
+    \end{block}
+\end{frame}
+
+
 
 
 
 \begin{frame}{Comparación de sketches}
+  \citaslide{Woodruff, 2014; Pilanci y Wainwright, 2017}
   \centering
   \begin{tabular}{lccc}
     \toprule
@@ -391,27 +487,29 @@
 % 4. NEWTON SKETCH
 % ============================================================
 \begin{frame}{Estructura de la Hessiana}
+  \small
+  \citaslide{Pilanci y Wainwright, 2017, §3}
   Para $f(x)=\sum_i\phi_i(a_i^\top x)$:
 
   \eqrow{Gradiente}
     {\nablaf(x)=A^\top v(x),\quad v_i=\phi_i'(a_i^\top x)}
     {Costo $O(nd)$.}
 
-  \pause
+  \vspace{-4pt}\pause
 
   \eqrow{Hessiana}
     {\Hess(x)=A^\top D(x)\,A,\quad
     D=\diag\bigl(\phi_i''(a_i^\top x)\bigr)}
     {$D\succeq 0$ diagonal.}
 
-  \pause
+  \vspace{-4pt}\pause
 
   \eqrow{Raíz cuadrada}
     {\Hess(x)=\bigl(D^{1/2}A\bigr)^{\!\top}
     \bigl(D^{1/2}A\bigr)}
     {Se obtiene escalando las filas de $A$.}
 
-  \pause
+  \vspace{-4pt}\pause
 
   \begin{block}{Problemas donde $D$ se obtiene directamente}
     \small
@@ -430,10 +528,11 @@
       \;\Rightarrow\; D_{ii}=e^{a_i^\top x}$.
     \end{itemize}
   \end{block}
-
+  \vspace*{9pt}
 \end{frame}
 
 \begin{frame}{Newton Sketch: el algoritmo}
+  \citaslide{Pilanci y Wainwright, 2017, §§3--4}
   \small
   \textbf{Idea:} sustituir la raíz del Hessiano por
   una versión comprimida.
@@ -477,6 +576,7 @@
 
 
 \begin{frame}{El problema: la diagonal y la estructura}
+  \citaslide{Woodruff, 2014; Pilanci y Wainwright, 2017}
   \begin{itemize}
     \item $D_t$ cambia en cada iteración $\Rightarrow$ hay que recalcular $D_t^{1/2}A$ y \alert{re-sketchear}.
     \item Escalar filas cuesta $O(\nnz(A))$ y se hace ``gratis'', pero \dots
@@ -498,12 +598,56 @@
 % 6. DEMOSTRACIÓN
 % ============================================================
 \begin{frame}{Resultado principal}
-  
+  \citaslide{Pilanci y Wainwright, 2017, §4.1 y lema~6.6}
+
   \centering\small Convergencia \alert{lineal-cuadrática}: tasa lineal controlada por $\varepsilon$, no por el número de condición.
+
+  \par\raggedright\small
+  \begin{block}{Hipótesis en la iteración $t$}
+    \begin{itemize}
+      \item $f$ es autoconcordante estándar, $H_t=\nabla^2 f(x_t)\succ0$
+            y $g_t=\nabla f(x_t)$ se calcula exactamente.
+      \item $B_t=D_t^{1/2}A$, $H_t=B_t^\top B_t+\mu I$ con $\mu\ge0$.
+            Se elige $m$ para que $S_t$ independiente sea un
+            $\varepsilon$-embedding de $\operatorname{col}(B_t)$
+            con probabilidad condicional $\ge 1-\delta_t$.
+    \end{itemize}
+  \end{block}
+  En ese evento, para $\varepsilon$ y $\lambda_t$ pequeños y con paso completo,
+  \[
+    \lambda_{t+1}\le C\bigl(\varepsilon\lambda_t+\lambda_t^2\bigr),
+    \qquad \lambda_t=\sqrt{g_t^\top H_t^{-1}g_t}.
+  \]
 \end{frame}
 
 \begin{frame}{Bosquejo de la demostración}
-  
+  \citaslide{Pilanci y Wainwright, 2017, lemas~6.3--6.6}
+  \small
+  \begin{enumerate}
+    \item \textbf{El embedding controla el Hessiano.} Para todo $v$,
+      $\|S_tB_tv\|_2^2$ aproxima $\|B_tv\|_2^2$. Al sumar $\mu\|v\|_2^2$,
+      \[
+        (1-\varepsilon)H_t\preceq\widehat H_t\preceq(1+\varepsilon)H_t .
+      \]
+    \item \textbf{El Hessiano controla la dirección.}
+      Sea $p_t=-H_t^{-1}g_t$. Al invertir la cota espectral,
+      \[
+        \|\Delta_t-p_t\|_{x_t}\le
+        \frac{\varepsilon}{1-\varepsilon}\,\|p_t\|_{x_t}
+        =\frac{\varepsilon}{1-\varepsilon}\,\lambda_t .
+      \]
+    \item \textbf{La autoconcordancia controla el resto.}
+      Cerca del óptimo, Armijo ($0<\alpha<1/2$) acepta el paso completo.
+      En norma dual local, $g_t+H_t\Delta_t$ es $O(\varepsilon\lambda_t)$
+      y el resto de Taylor es $O(\lambda_t^2)$.
+      Como $\|\Delta_t\|_{x_t}<1/2$, las normas en $x_t$ y $x_{t+1}$
+      son comparables. La suma da la cota de $\lambda_{t+1}$.
+  \end{enumerate}
+  % Para r=||Delta_t||_x<1, el resto tiene norma dual <=r^2/(1-r).
+  % El cambio a la norma dual de x_{t+1} cuesta a lo sumo 1/(1-r).
+  % En una vecindad local fija esto da C universal. Para un horizonte T,
+  % los embeddings se cumplen simultáneamente con prob. >=1-sum_{t<T} delta_t.
+  % Armijo: parámetro de descenso fijo <1/2, tolerancia de sketch suficientemente pequeña.
 \end{frame}
 
 % ============================================================
@@ -513,7 +657,8 @@
 
 
 \begin{frame}{Experimentos: configuración}
-\small
+\footnotesize
+\setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}
 
 \begin{block}{Problema: regresión logística regularizada}
 \[
@@ -524,7 +669,7 @@ f(x)=\sum_{i=1}^{n}\log(1+e^{-y_i a_i^\top x})
 \end{block}
 
 \textbf{Construcción de los datos sintéticos:}
-\begin{itemize}
+\begin{itemize}\setlength{\itemsep}{1pt}
     \item Matriz de diseño:
     $A=G\operatorname{diag}(j^{-p})Q^\top$,
     con $G$ gaussiana, $Q$ ortogonal y $p=1$.
@@ -533,7 +678,7 @@ f(x)=\sum_{i=1}^{n}\log(1+e^{-y_i a_i^\top x})
 \end{itemize}
 
 \vspace{0.1cm}
-\begin{itemize}
+\begin{itemize}\setlength{\itemsep}{1pt}
     \item \textbf{Dimensiones:} $n=5000$, $d=100$;
     regularización $\mu=0.5$.
     \item \textbf{Métodos:} Newton exacto, Gaussian,
@@ -645,11 +790,6 @@ Newton exacto: $18.37$ ms.
 % 8. CONCLUSIONES Y REFERENCIAS
 % ============================================================
 \begin{frame}{Conclusiones}
-  \begin{itemize}
-    \item \dots % completar
-    \item \dots % completar
-    \item \dots % completar
-  \end{itemize}
 \end{frame}
 
 \begin{frame}[allowframebreaks]{Referencias}
@@ -660,7 +800,17 @@ Newton exacto: $18.37$ ms.
     \bibitem{bv2004} S.~Boyd and L.~Vandenberghe, \emph{Convex Optimization}, Cambridge University Press, 2004.
     \bibitem{w2014} D.~P.~Woodruff, \emph{Sketching as a Tool for Numerical Linear Algebra}, Found.\ Trends Theor.\ Comput.\ Sci., 10(1--2), 2014.
     \bibitem{cw2013} K.~L.~Clarkson and D.~P.~Woodruff, \emph{Low Rank Approximation and Regression in Input Sparsity Time}, STOC, 2013.
+
+    \bibitem{jl1984} W.~B.~Johnson and J.~Lindenstrauss,
+    \href{https://doi.org/10.1090/conm/026/737400}{\emph{Extensions of Lipschitz mappings into a Hilbert space}},
+    Contemp. Math., 26, 189--206, 1984.
+    \bibitem{mt2020} P.-G.~Martinsson and J.~A.~Tropp,
+    \href{https://doi.org/10.1017/S0962492920000021}{\emph{Randomized numerical linear algebra: Foundations and algorithms}},
+    Acta Numerica, 29, 403--572, 2020.
   \end{thebibliography}
 \end{frame}
 
 \end{document}
+
+
+
