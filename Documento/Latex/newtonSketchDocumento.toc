@@ -65,4 +65,22 @@
 \contentsline {section}{\numberline {8.6}Restricciones, \emph {sketch} parcial y método de barrera}{38}{section.8.6}%
 \contentsline {paragraph}{\emph {Sketch} parcial.}{38}{section*.13}%
 \contentsline {paragraph}{Método de barrera.}{38}{section*.14}%
-\contentsline {chapter}{Bibliografía}{39}{chapter*.15}%
+\contentsline {part}{IV\hspace {1em}Experimentos numéricos}{39}{part.4}%
+\contentsline {chapter}{\numberline {9}Diseño experimental}{40}{chapter.9}%
+\contentsline {section}{\numberline {9.1}Datos y objetivo}{40}{section.9.1}%
+\contentsline {paragraph}{Relación con la autoconcordancia.}{41}{section*.15}%
+\contentsline {section}{\numberline {9.2}Dirección de búsqueda y matrices comparadas}{41}{section.9.2}%
+\contentsline {section}{\numberline {9.3}Cómo se certifica la misma precisión}{41}{section.9.3}%
+\contentsline {section}{\numberline {9.4}Protocolo de medición y reproducibilidad}{42}{section.9.4}%
+\contentsline {chapter}{\numberline {10}Resultados numéricos}{43}{chapter.10}%
+\contentsline {section}{\numberline {10.1}Tiempo y memoria a precisión fija}{43}{section.10.1}%
+\contentsline {section}{\numberline {10.2}Progreso por iteración}{44}{section.10.2}%
+\contentsline {section}{\numberline {10.3}Qué cambia al aumentar el número de filas}{44}{section.10.3}%
+\contentsline {section}{\numberline {10.4}Distorsión de la curvatura inicial}{45}{section.10.4}%
+\contentsline {section}{\numberline {10.5}Dónde se gasta el tiempo del \emph {sketch} gaussiano}{46}{section.10.5}%
+\contentsline {chapter}{\numberline {11}Conclusiones}{47}{chapter.11}%
+\contentsline {paragraph}{Tiempo para alcanzar una precisión certificada.}{47}{section*.16}%
+\contentsline {paragraph}{La estructura de la proyección determina el ahorro.}{47}{section*.17}%
+\contentsline {paragraph}{Tamaño del \emph {sketch} y alcance del resultado.}{47}{section*.18}%
+\contentsline {paragraph}{Vínculo con Newton Sketch adaptativo.}{47}{section*.19}%
+\contentsline {chapter}{Bibliografía}{48}{chapter*.20}%
